@@ -18,6 +18,7 @@ export default function Header() {
 
   const [userName, setUserName] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -25,6 +26,7 @@ export default function Header() {
     if (token) {
       setIsLoggedIn(true);
       setUserName(storedName || 'User');
+      setIsAdmin(token === 'admin-token');
     }
   }, []);
 
@@ -32,6 +34,7 @@ export default function Header() {
     localStorage.removeItem('token');
     localStorage.removeItem('userName');
     setIsLoggedIn(false);
+    setIsAdmin(false);
     navigate('/');
   };
 
@@ -143,12 +146,17 @@ export default function Header() {
               Enquire
             </button>
             {isLoggedIn ? (
-              <div className="user-menu" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <span className="user-name" style={{ color: 'white', fontWeight: 500, fontSize: '0.95rem' }}>Hi, {userName}</span>
-                <button className="login-button" onClick={handleLogout} style={{ background: 'transparent', border: '1px solid #ff9500' }}>
-                  <span className="login-button-text">Logout</span>
-                  <div className="login-button-shine"></div>
+              <div className="nav-item user-menu">
+                <button className="nav-button">
+                  <span className="user-name" style={{ fontWeight: 500, fontSize: '0.95rem' }}>Hi, {userName}</span>
+                  <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </button>
+                <div className="dropdown" style={{ right: 0, left: 'auto', minWidth: '150px' }}>
+                  <Link to={isAdmin ? "/admin-dashboard" : "/user-dashboard"} className="dropdown-item">Dashboard</Link>
+                  <button onClick={handleLogout} className="dropdown-item" style={{ fontFamily: 'inherit' }}>
+                    Logout
+                  </button>
+                </div>
               </div>
             ) : (
               <button className="login-button" onClick={() => navigate('/login')}>
@@ -190,6 +198,10 @@ export default function Header() {
               {isLoggedIn ? (
                 <>
                   <div style={{ color: 'white', textAlign: 'center', margin: '15px 0', fontSize: '1.1rem', fontWeight: 500 }}>Hi, {userName}</div>
+                  <button className="mobile-login-button" onClick={() => navigate(isAdmin ? '/admin-dashboard' : '/user-dashboard')} style={{ background: 'transparent', border: '1px solid white', marginBottom: '10px' }}>
+                      <span className="login-button-text">Dashboard</span>
+                      <div className="login-button-shine"></div>
+                  </button>
                   <button className="mobile-login-button" onClick={handleLogout} style={{ background: 'transparent', border: '1px solid #ff9500' }}>
                       <span className="login-button-text">Logout</span>
                       <div className="login-button-shine"></div>
