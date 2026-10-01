@@ -16,6 +16,25 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const [userName, setUserName] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedName = localStorage.getItem('userName');
+    if (token) {
+      setIsLoggedIn(true);
+      setUserName(storedName || 'User');
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userName');
+    setIsLoggedIn(false);
+    navigate('/');
+  };
+
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
@@ -123,10 +142,20 @@ export default function Header() {
             <button className="enquire-button" onClick={() => navigate('/enquiry')}>
               Enquire
             </button>
-            <button className="login-button" onClick={() => navigate('/login')}>
-              <span className="login-button-text">Login</span>
-              <div className="login-button-shine"></div>
-            </button>
+            {isLoggedIn ? (
+              <div className="user-menu" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <span className="user-name" style={{ color: 'white', fontWeight: 500, fontSize: '0.95rem' }}>Hi, {userName}</span>
+                <button className="login-button" onClick={handleLogout} style={{ background: 'transparent', border: '1px solid #ff9500' }}>
+                  <span className="login-button-text">Logout</span>
+                  <div className="login-button-shine"></div>
+                </button>
+              </div>
+            ) : (
+              <button className="login-button" onClick={() => navigate('/login')}>
+                <span className="login-button-text">Login</span>
+                <div className="login-button-shine"></div>
+              </button>
+            )}
           </div>
 
           <button className="mobile-menu-button" onClick={toggleMobileMenu}>
@@ -158,10 +187,20 @@ export default function Header() {
            <div className="nav-mobile-item"><button className="nav-mobile-button">Hotels</button></div>
            <div className="mobile-login-section">
               <button className="mobile-enquire-button" onClick={() => navigate('/enquiry')}>Enquire</button>
-              <button className="mobile-login-button" onClick={() => navigate('/login')}>
-                  <span className="login-button-text">Login</span>
-                  <div className="login-button-shine"></div>
-              </button>
+              {isLoggedIn ? (
+                <>
+                  <div style={{ color: 'white', textAlign: 'center', margin: '15px 0', fontSize: '1.1rem', fontWeight: 500 }}>Hi, {userName}</div>
+                  <button className="mobile-login-button" onClick={handleLogout} style={{ background: 'transparent', border: '1px solid #ff9500' }}>
+                      <span className="login-button-text">Logout</span>
+                      <div className="login-button-shine"></div>
+                  </button>
+                </>
+              ) : (
+                <button className="mobile-login-button" onClick={() => navigate('/login')}>
+                    <span className="login-button-text">Login</span>
+                    <div className="login-button-shine"></div>
+                </button>
+              )}
            </div>
         </div>
       </div>

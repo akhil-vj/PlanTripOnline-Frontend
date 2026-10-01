@@ -83,6 +83,7 @@ export default function SignupPage() {
       if (response.ok) {
         if (data.token) {
           localStorage.setItem('token', data.token);
+          localStorage.setItem('userName', data.user?.name || formData.full_name);
         }
         navigate('/user-dashboard');
       } else {

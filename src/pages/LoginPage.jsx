@@ -44,6 +44,8 @@ export default function LoginPage() {
 
     // Hardcoded Admin check
     if (formData.login_id === 'admin' && formData.password === 'plantrip@123') {
+      localStorage.setItem('token', 'admin-token');
+      localStorage.setItem('userName', 'Admin');
       navigate('/admin-dashboard');
       return;
     }
@@ -61,6 +63,7 @@ export default function LoginPage() {
         // Assume token is returned
         if (data.token) {
           localStorage.setItem('token', data.token);
+          localStorage.setItem('userName', data.user?.name || data.user?.full_name || formData.login_id);
         }
         navigate('/user-dashboard');
       } else {
