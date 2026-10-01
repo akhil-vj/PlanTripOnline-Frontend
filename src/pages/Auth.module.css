@@ -1,0 +1,218 @@
+.authContainer {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+  color: #ffffff;
+}
+
+.authLeft {
+  flex: 1;
+  background-image: url('https://images.unsplash.com/photo-1542332213-31f87348057f?q=80&w=2070&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.authLeft::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.authLeftContent {
+  position: relative;
+  z-index: 1;
+}
+
+.authLogo {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.authLogo span {
+  color: #ff9800; /* Orange 'O' */
+}
+
+.authTitle {
+  font-size: 1.8rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.authSubtitle {
+  font-size: 1rem;
+  font-weight: 300;
+  color: #e2e8f0;
+}
+
+.backButton {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  background: #ffffff;
+  color: #1c1917;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 2;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.authRight {
+  flex: 1;
+  background-color: #3b4b5a; /* Dark blue/gray matching screenshot */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.formWrapper {
+  max-width: 450px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.formHeader {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.formSubheader {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  margin-bottom: 2rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.formRow {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.formRow .formGroup {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.formGroup label {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.formGroup input, .formGroup select {
+  padding: 0.8rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #5a6b7c;
+  background-color: transparent;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.formGroup input::placeholder {
+  color: #94a3b8;
+}
+
+.formGroup input:focus, .formGroup select:focus {
+  border-color: #ff9800;
+}
+
+.formOptions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkboxGroup input {
+  accent-color: #ff9800;
+}
+
+.forgotLink, .termsLink {
+  color: #ff9800;
+  text-decoration: none;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #ff9800;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 1.5rem;
+}
+
+.submitBtn:hover {
+  background-color: #e68a00;
+}
+
+.switchAuth {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.switchAuth a {
+  color: #ff9800;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.errorMsg {
+  color: #f87171;
+  background-color: rgba(248, 113, 113, 0.1);
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .authContainer {
+    flex-direction: column;
+  }
+  .authLeft {
+    min-height: 300px;
+    padding: 3rem 2rem;
+  }
+  .authRight {
+    padding: 2rem;
+  }
+}
