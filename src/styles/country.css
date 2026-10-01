@@ -1,0 +1,41 @@
+/* Country Page Styles */
+.country-page .hero {
+  min-height: 80vh;
+}
+
+.country-page .hero-bg-text {
+  top: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.2;
+}
+
+.country-page .hero-destinations-list span {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.country-page .hero-destinations-list span:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.country-page .hero-destinations-list a {
+  color: white;
+}
+
+.country-page .hero-destinations-list a:hover {
+  color: white;
+}
+
+/* Authentication Pages */
+.auth-page .hero, .enquiry-page .hero {
+  min-height: 50vh;
+}
+
+@media (max-width: 768px) {
+  .enquiry-page form {
+    grid-template-columns: 1fr !important;
+  }
+}
