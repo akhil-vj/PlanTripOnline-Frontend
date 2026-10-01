@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { apiFetch } from '../config/api';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
     full_name: '', email: '', country: '', phone: '',
     password: '', password_confirmation: '', terms_accepted: false
   });
+  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   
   const [pupilTransform, setPupilTransform] = useState('translate(0px, 0px)');
   const [confirmPupilTransform, setConfirmPupilTransform] = useState('translate(0px, 0px)');
@@ -50,13 +53,51 @@ export default function SignupPage() {
     setFormData({ ...formData, [e.target.name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (formData.password !== formData.password_confirmation) {
+      setError("Passwords do not match");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const payload = {
+        name: formData.full_name,
+        email: formData.email,
+        country: formData.country,
+        phone: formData.phone,
+        password: formData.password,
+        password_confirmation: formData.password_confirmation
+      };
+
+      const response = await apiFetch('/api/register', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        navigate('/user-dashboard');
+      } else {
+        if (data.errors) {
+          const firstError = Object.values(data.errors)[0][0];
+          setError(firstError);
+        } else {
+          setError(data.message || 'Registration failed. Please try again.');
+        }
+      }
+    } catch (err) {
+      setError('An error occurred while connecting to the server.');
+    } finally {
       setLoading(false);
-      alert('Signup clicked. This is a frontend demo.');
-    }, 1500);
+    }
   };
 
   return (
@@ -261,6 +302,17 @@ export default function SignupPage() {
         .signup-page .form-header p {
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.9rem;
+        }
+
+        .signup-page .error-msg {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: #ff3b30;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            text-align: center;
         }
 
         .signup-page .form-group {
@@ -633,6 +685,8 @@ export default function SignupPage() {
               <h2>Create Account</h2>
               <p>Join us and start your journey today</p>
             </div>
+
+            {error && <div className="error-msg">{error}</div>}
 
             <form id="signupForm" onSubmit={handleSubmit}>
               

@@ -1,14 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { apiFetch } from '../config/api';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ login_id: '', password: '', remember_me: false });
+  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pupilTransform, setPupilTransform] = useState('translate(0px, 0px)');
   
   const eyeBtnRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -35,13 +38,39 @@ export default function LoginPage() {
     return () => document.removeEventListener('mousemove', handleMouseMove);
   }, [showPassword]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    // Hardcoded Admin check
+    if (formData.login_id === 'admin' && formData.password === 'plantrip@123') {
+      navigate('/admin-dashboard');
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await apiFetch('/api/login', {
+        method: 'POST',
+        body: JSON.stringify({ email: formData.login_id, password: formData.password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Assume token is returned
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        navigate('/user-dashboard');
+      } else {
+        setError(data.message || 'Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      setError('An error occurred while connecting to the server.');
+    } finally {
       setLoading(false);
-      alert('Login clicked. This is a frontend demo.');
-    }, 1500);
+    }
   };
 
   return (
@@ -244,6 +273,17 @@ export default function LoginPage() {
         .login-page .form-header p {
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.95rem;
+        }
+
+        .login-page .error-msg {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: #ff3b30;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            text-align: center;
         }
 
         .login-page .form-group {
@@ -492,6 +532,8 @@ export default function LoginPage() {
               <h2>Welcome Back</h2>
               <p>Enter your credentials to access your account</p>
             </div>
+
+            {error && <div className="error-msg">{error}</div>}
 
             <form id="loginForm" onSubmit={handleSubmit}>
               <div className="form-group">
