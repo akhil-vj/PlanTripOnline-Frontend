@@ -23,10 +23,11 @@ export default function Header() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedName = localStorage.getItem('userName');
+    const storedEmail = localStorage.getItem('userEmail');
     if (token) {
       setIsLoggedIn(true);
       setUserName(storedName || 'User');
-      setIsAdmin(token === 'admin-token');
+      setIsAdmin(storedEmail === 'admin@plantriponline.com');
     }
   }, []);
 

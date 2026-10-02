@@ -2,7 +2,8 @@ import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children, adminOnly = false, userOnly = false }) => {
   const token = localStorage.getItem('token');
-  const isAdmin = token === 'admin-token';
+  const userEmail = localStorage.getItem('userEmail');
+  const isAdmin = userEmail === 'admin@plantriponline.com';
 
   if (!token) {
     return <Navigate to="/login" replace />;
