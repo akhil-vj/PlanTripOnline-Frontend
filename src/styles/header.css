@@ -204,6 +204,27 @@
     transform: translateX(100%);
 }
 
+.logout-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-icon-btn:hover {
+    background: rgba(239, 68, 68, 0.8); /* Red on hover */
+    border-color: rgba(239, 68, 68, 1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
+}
+
 /* Mobile menu button */
 .mobile-menu-button {
     display: flex;
