@@ -1,12 +1,33 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { brandInfo, contactInfo, featuredCountries } from '../../data/global';
-import '../../styles/header.css'; // We'll create this later
+import '../../styles/header.css';
+
+// Known country slugs for detection
+const COUNTRY_SLUGS = featuredCountries.map(c => c.slug);
+
+// Navigation items config
+const NAV_ITEMS = [
+  { label: 'Destinations', path: 'destinations' },
+  { label: 'Day Tours', path: 'day-tours' },
+  { label: 'Transfers', path: 'transfers' },
+  { label: 'Tour Packages', path: 'tour-packages' },
+  { label: 'Customize Trip', path: 'customized-packages' },
+  { label: 'Hotels', path: 'hotels' },
+];
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Detect if we're on a country page
+  const pathSegments = location.pathname.split('/').filter(Boolean);
+  const currentCountrySlug = COUNTRY_SLUGS.includes(pathSegments[0]) ? pathSegments[0] : null;
+  const currentCountry = currentCountrySlug
+    ? featuredCountries.find(c => c.slug === currentCountrySlug)
+    : null;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +36,11 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const [userName, setUserName] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -51,91 +77,45 @@ export default function Header() {
             </span>
           </Link>
 
+          {/* Country Indicator Badge — shows when on a country page */}
+          {currentCountry && (
+            <Link to={`/${currentCountrySlug}`} className="country-badge">
+              <span className="country-badge-flag">{currentCountry.flag}</span>
+              <span className="country-badge-name">{currentCountry.name}</span>
+            </Link>
+          )}
+
           <nav className="nav-desktop">
-            {/* Desktop Navigation Items */}
-            <div className="nav-item">
-              <button className="nav-button">
-                <span>Destinations</span>
-                <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </button>
-              <div className="dropdown">
-                {featuredCountries.map(country => (
-                  <Link key={country.slug} to={`/${country.slug}/destinations`} className="dropdown-item">
-                    {country.name} Destinations
+            {NAV_ITEMS.map(item => (
+              <div className="nav-item" key={item.path}>
+                {currentCountrySlug ? (
+                  /* COUNTRY MODE: Direct link, no dropdown */
+                  <Link
+                    to={`/${currentCountrySlug}/${item.path}`}
+                    className={`nav-button nav-link ${
+                      location.pathname === `/${currentCountrySlug}/${item.path}` ? 'nav-active' : ''
+                    }`}
+                  >
+                    <span>{item.label}</span>
                   </Link>
-                ))}
+                ) : (
+                  /* HOMEPAGE MODE: Show dropdown with all countries */
+                  <>
+                    <button className="nav-button">
+                      <span>{item.label}</span>
+                      <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div className="dropdown">
+                      {featuredCountries.map(country => (
+                        <Link key={country.slug} to={`/${country.slug}/${item.path}`} className="dropdown-item">
+                          {country.flag} {country.name} {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
-            
-            <div className="nav-item">
-              <button className="nav-button">
-                <span>Day Tours</span>
-                <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </button>
-              <div className="dropdown">
-                {featuredCountries.map(country => (
-                  <Link key={country.slug} to={`/${country.slug}/day-tours`} className="dropdown-item">
-                    {country.name} Day Tours
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="nav-item">
-              <button className="nav-button">
-                <span>Transfers</span>
-                <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </button>
-              <div className="dropdown">
-                {featuredCountries.map(country => (
-                  <Link key={country.slug} to={`/${country.slug}/transfers`} className="dropdown-item">
-                    {country.name} Transfers
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="nav-item">
-              <button className="nav-button">
-                <span>Tour Packages</span>
-                <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </button>
-              <div className="dropdown">
-                {featuredCountries.map(country => (
-                  <Link key={country.slug} to={`/${country.slug}/tour-packages`} className="dropdown-item">
-                    {country.name} Tour Packages
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="nav-item">
-              <button className="nav-button">
-                <span>Customize Trip</span>
-                <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </button>
-              <div className="dropdown">
-                {featuredCountries.map(country => (
-                  <Link key={country.slug} to={`/${country.slug}/customized-packages`} className="dropdown-item">
-                    {country.name} Trip
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="nav-item">
-              <button className="nav-button">
-                <span>Hotels</span>
-                <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </button>
-              <div className="dropdown">
-                {featuredCountries.map(country => (
-                  <Link key={country.slug} to={`/${country.slug}/hotels`} className="dropdown-item">
-                    {country.name} Hotels
-                  </Link>
-                ))}
-              </div>
-            </div>
+            ))}
           </nav>
 
           <div className="header-right">
@@ -178,30 +158,59 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         <div className={`nav-mobile ${mobileMenuOpen ? 'active' : ''}`}>
-           {/* Basic implementation for now */}
-           <div className="nav-mobile-item"><button className="nav-mobile-button">Destinations</button></div>
-           <div className="nav-mobile-item"><button className="nav-mobile-button">Day Tours</button></div>
-           <div className="nav-mobile-item"><button className="nav-mobile-button">Transfers</button></div>
-           <div className="nav-mobile-item"><button className="nav-mobile-button">Tour Packages</button></div>
-           <div className="nav-mobile-item"><button className="nav-mobile-button">Customize Trip</button></div>
-           <div className="nav-mobile-item"><button className="nav-mobile-button">Hotels</button></div>
-           <div className="mobile-login-section">
-              <button className="mobile-enquire-button" onClick={() => navigate('/enquiry')}>Enquire</button>
-              {isLoggedIn ? (
-                <>
-                  <div style={{ color: 'white', textAlign: 'center', margin: '15px 0', fontSize: '1.1rem', fontWeight: 500 }}>Hi, {userName}</div>
-                  <button className="mobile-login-button" onClick={handleLogout} style={{ background: 'transparent', border: '1px solid #ff9500' }}>
-                      <span className="login-button-text">Logout</span>
-                      <div className="login-button-shine"></div>
-                  </button>
-                </>
+          {/* Country indicator on mobile */}
+          {currentCountry && (
+            <div className="mobile-country-indicator">
+              <span>{currentCountry.flag}</span>
+              <span>Exploring {currentCountry.name}</span>
+            </div>
+          )}
+
+          {NAV_ITEMS.map(item => (
+            <div className="nav-mobile-item" key={item.path}>
+              {currentCountrySlug ? (
+                /* COUNTRY MODE: Direct link */
+                <Link
+                  to={`/${currentCountrySlug}/${item.path}`}
+                  className={`nav-mobile-button nav-mobile-link ${
+                    location.pathname === `/${currentCountrySlug}/${item.path}` ? 'nav-mobile-active' : ''
+                  }`}
+                >
+                  {item.label}
+                </Link>
               ) : (
-                <button className="mobile-login-button" onClick={() => navigate('/login')}>
-                    <span className="login-button-text">Login</span>
+                /* HOMEPAGE MODE: Show country list */
+                <details className="mobile-dropdown">
+                  <summary className="nav-mobile-button">{item.label}</summary>
+                  <div className="mobile-dropdown-content">
+                    {featuredCountries.map(country => (
+                      <Link key={country.slug} to={`/${country.slug}/${item.path}`} className="mobile-dropdown-item">
+                        {country.flag} {country.name}
+                      </Link>
+                    ))}
+                  </div>
+                </details>
+              )}
+            </div>
+          ))}
+
+          <div className="mobile-login-section">
+            <button className="mobile-enquire-button" onClick={() => navigate('/enquiry')}>Enquire</button>
+            {isLoggedIn ? (
+              <>
+                <div style={{ color: 'white', textAlign: 'center', margin: '15px 0', fontSize: '1.1rem', fontWeight: 500 }}>Hi, {userName}</div>
+                <button className="mobile-login-button" onClick={handleLogout} style={{ background: 'transparent', border: '1px solid #ff9500' }}>
+                    <span className="login-button-text">Logout</span>
                     <div className="login-button-shine"></div>
                 </button>
-              )}
-           </div>
+              </>
+            ) : (
+              <button className="mobile-login-button" onClick={() => navigate('/login')}>
+                  <span className="login-button-text">Login</span>
+                  <div className="login-button-shine"></div>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </header>
