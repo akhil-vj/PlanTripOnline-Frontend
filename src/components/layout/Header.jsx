@@ -80,7 +80,6 @@ export default function Header() {
           {/* Country Indicator Badge — shows when on a country page */}
           {currentCountry && (
             <Link to={`/${currentCountrySlug}`} className="country-badge">
-              <span className="country-badge-flag">{currentCountry.flag}</span>
               <span className="country-badge-name">{currentCountry.name}</span>
             </Link>
           )}
@@ -164,7 +163,6 @@ export default function Header() {
           {/* Country indicator on mobile */}
           {currentCountry && (
             <div className="mobile-country-indicator">
-              <span>{currentCountry.flag}</span>
               <span>Exploring {currentCountry.name}</span>
             </div>
           )}
