@@ -119,13 +119,13 @@ export default function EnquiryPage() {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             color: white;
-            padding: 40px;
+            padding: 60px 80px;
             position: relative;
             opacity: 0;
             transform: translateX(-100%);
-            animation: slideInLeft 0.8s ease forwards;
+            animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes slideInLeft {
@@ -142,21 +142,24 @@ export default function EnquiryPage() {
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(52, 73, 94, 0.1), rgba(44, 62, 80, 0.2));
-            backdrop-filter: blur(5px);
-            border-radius: 0 20px 20px 0;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1));
+            backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .enquiry-page .left-content {
             position: relative;
             z-index: 1;
-            text-align: center;
+            text-align: left;
+            max-width: 500px;
         }
 
         .enquiry-page .logo {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 20px;
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 25px;
+            letter-spacing: -1px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
         .enquiry-page .logo .highlight {
@@ -164,41 +167,56 @@ export default function EnquiryPage() {
         }
 
         .enquiry-page .tagline {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-            line-height: 1.4;
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.1;
+            background: linear-gradient(to right, #ffffff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .enquiry-page .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 30px;
+            font-size: 1.15rem;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 40px;
+            line-height: 1.6;
+            font-weight: 400;
         }
 
         .enquiry-page .feature-list {
             text-align: left;
-            max-width: 300px;
-            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
         .enquiry-page .feature-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 15px;
-            font-size: 0.95rem;
+            gap: 16px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #f8fafc;
         }
 
         .enquiry-page .feature-icon {
-            width: 20px;
-            height: 20px;
-            background: #ff9500;
-            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #ff9500, #ea580c);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 0.8rem;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(234, 88, 12, 0.3);
         }
 
         .enquiry-page .right-section {
