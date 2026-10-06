@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { brandInfo, contactInfo, featuredCountries } from '../../data/global';
 import '../../styles/header.css';
@@ -61,6 +61,19 @@ export default function Header() {
     navigate('/');
   };
 
+  const [isProfileClicked, setIsProfileClicked] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileClicked(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
@@ -122,15 +135,27 @@ export default function Header() {
               Enquire
             </button>
             {isLoggedIn ? (
-              <div className="nav-item user-profile">
-                <button className="nav-button profile-btn" style={{ gap: '8px' }}>
+              <div className="nav-item user-profile" ref={profileMenuRef}>
+                <button 
+                  className="nav-button profile-btn" 
+                  style={{ gap: '8px' }}
+                  onClick={() => setIsProfileClicked(!isProfileClicked)}
+                >
                   <div className="profile-avatar">
                     {userName ? userName.charAt(0).toUpperCase() : 'U'}
                   </div>
                   <span className="profile-name" style={{ color: 'white', fontWeight: 500, fontSize: '0.95rem' }}>{userName}</span>
                   <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </button>
-                <div className="dropdown profile-dropdown">
+                <div 
+                  className="dropdown profile-dropdown"
+                  style={{ 
+                    display: isProfileClicked ? 'block' : '', 
+                    right: 0, 
+                    left: 'auto' 
+                  }}
+                  onClick={() => setIsProfileClicked(false)}
+                >
                   <div className="profile-dropdown-header">
                     Signed in as <strong>{userName}</strong>
                   </div>
