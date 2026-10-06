@@ -48,6 +48,9 @@ export default function App() {
           </ProtectedRoute>
         } />
 
+        <Route path="enquiry" element={<EnquiryPage />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
+        
         <Route element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutPage />} />
@@ -56,8 +59,6 @@ export default function App() {
           <Route path="privacy" element={<PrivacyPage />} />
           <Route path="terms" element={<TermsPage />} />
           <Route path="cookies" element={<CookiesPage />} />
-          <Route path="enquiry" element={<EnquiryPage />} />
-          <Route path="forgot-password" element={<ForgotPasswordPage />} />
 
           <Route path=":country" element={<CountryLayout />}>
             <Route index element={<CountryPage />} />
