@@ -56,52 +56,74 @@
 .sidebarLink {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0.875rem 1rem;
+  gap: 14px;
+  padding: 0.85rem 1.15rem;
   color: #64748b;
   text-decoration: none;
-  border-radius: 12px;
-  font-weight: 600;
+  border-radius: 10px;
+  font-weight: 500;
   font-size: 0.95rem;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
+}
+
+.sidebarLink svg {
+  color: #94a3b8;
+  transition: color 0.25s ease;
 }
 
 .sidebarLink:hover {
-  background-color: #f1f5f9;
+  background-color: #f8fafc;
   color: #0f172a;
 }
 
+.sidebarLink:hover svg {
+  color: #64748b;
+}
+
 .sidebarLink.active {
-  background: linear-gradient(135deg, #ff9500, #ea580c);
-  color: white;
-  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+  background-color: #fff7ed;
+  color: #ea580c;
+  font-weight: 600;
+}
+
+.sidebarLink.active svg {
+  color: #ea580c;
 }
 
 .logoutBtn {
   padding: 1.5rem;
-  border-top: 1px solid #f1f5f9;
 }
 
 .logoutBtn button {
   width: 100%;
-  padding: 0.875rem;
-  background-color: #fff1f2;
-  color: #e11d48;
-  border: 1px solid #ffe4e6;
-  border-radius: 12px;
-  font-weight: 600;
+  padding: 0.85rem;
+  background-color: transparent;
+  color: #64748b;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.logoutBtn button svg {
+  color: #94a3b8;
+  transition: color 0.2s ease;
 }
 
 .logoutBtn button:hover {
-  background-color: #e11d48;
-  color: white;
-  border-color: #e11d48;
+  background-color: #fff1f2;
+  color: #e11d48;
+  border-color: #ffe4e6;
+}
+
+.logoutBtn button:hover svg {
+  color: #e11d48;
 }
 
 .mainContent {
