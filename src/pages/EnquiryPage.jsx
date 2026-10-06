@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function EnquiryPage() {
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     full_name: '', country: '', email: '', phone: '',
     destination: '', travel_type: '', start_date: '', duration: '',
@@ -37,18 +39,18 @@ export default function EnquiryPage() {
             top: 20px;
             left: 20px;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.9);
-            color: #1c1917;
-            padding: 12px 20px;
-            text-decoration: none;
-            border-radius: 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            width: 44px;
+            height: 44px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
         .enquiry-page .back-button:hover {
@@ -481,9 +483,12 @@ export default function EnquiryPage() {
       `}</style>
 
       {/* Back Button */}
-      <Link to="/" className="back-button">
-        ← Back to Homepage
-      </Link>
+      <button onClick={() => navigate(-1)} className="back-button" title="Go Back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </button>
       
       {/* Homepage Background */}
       <div className="homepage-background"></div>
