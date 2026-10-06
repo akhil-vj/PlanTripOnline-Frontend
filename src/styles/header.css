@@ -336,6 +336,10 @@
 }
 
 @media (min-width: 1024px) {
+    .header-content {
+        transform: translateX(-2.5rem);
+    }
+
     .nav-desktop {
         display: flex;
     }
