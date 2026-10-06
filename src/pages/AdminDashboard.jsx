@@ -14,14 +14,6 @@ export default function AdminDashboard() {
     navigate('/login');
   };
 
-  const getPageTitle = () => {
-    if (location.pathname.includes('/users')) return 'Users Management';
-    if (location.pathname.includes('/bookings')) return 'Bookings Overview';
-    if (location.pathname.includes('/packages')) return 'Packages Content';
-    if (location.pathname.includes('/settings')) return 'Platform Settings';
-    return 'Dashboard Overview';
-  };
-
   return (
     <div className={styles.dashboardContainer}>
       <Helmet>
@@ -81,23 +73,15 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className={styles.mainContent}>
-        <header className={styles.header}>
-          <div className={styles.headerTitle}>
-            {getPageTitle()}
-          </div>
-          <div className={styles.userInfo}>
-            <span>Administrator</span>
-            <div className={styles.userAvatar}>A</div>
-          </div>
-        </header>
-
         <div className={styles.contentBody}>
           <Routes>
             <Route index element={
               <>
                 <div className={styles.welcomeCard}>
-                  <h2>Welcome back, Admin! 🚀</h2>
-                  <p>Here's a quick overview of what's happening across PlantripOnline today.</p>
+                  <div>
+                    <h2>Welcome back, Admin! 🚀</h2>
+                    <p>Here's a quick overview of what's happening across PlantripOnline today.</p>
+                  </div>
                 </div>
 
                 <div className={styles.statsGrid}>
@@ -108,10 +92,9 @@ export default function AdminDashboard() {
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                       </div>
                     </div>
-                    <div className={styles.statValue}>1,245</div>
-                    <div className={`${styles.statTrend} ${styles.positive}`}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-                      +12.5% from last month
+                    <div className={styles.statValue}>0</div>
+                    <div className={styles.statTrend} style={{color: '#64748b'}}>
+                      No data available
                     </div>
                   </div>
 
@@ -122,10 +105,9 @@ export default function AdminDashboard() {
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                       </div>
                     </div>
-                    <div className={styles.statValue}>84</div>
-                    <div className={`${styles.statTrend} ${styles.positive}`}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-                      +8.2% from last month
+                    <div className={styles.statValue}>0</div>
+                    <div className={styles.statTrend} style={{color: '#64748b'}}>
+                      No data available
                     </div>
                   </div>
 
@@ -136,10 +118,9 @@ export default function AdminDashboard() {
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                       </div>
                     </div>
-                    <div className={styles.statValue}>$45,230</div>
-                    <div className={`${styles.statTrend} ${styles.positive}`}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-                      +18.4% from last month
+                    <div className={styles.statValue}>$0</div>
+                    <div className={styles.statTrend} style={{color: '#64748b'}}>
+                      No data available
                     </div>
                   </div>
 
@@ -150,18 +131,51 @@ export default function AdminDashboard() {
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                       </div>
                     </div>
-                    <div className={styles.statValue}>32</div>
-                    <div className={`${styles.statTrend} ${styles.negative}`}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
-                      -2 packages expired
+                    <div className={styles.statValue}>0</div>
+                    <div className={styles.statTrend} style={{color: '#64748b'}}>
+                      No data available
                     </div>
                   </div>
                 </div>
 
-                {/* Recent Activity Table (Mock) */}
+                <div className={styles.dashboardMiddleSection}>
+                  <div className={styles.chartContainer}>
+                    <div className={styles.tableHeader}>
+                      <h3>Revenue Overview</h3>
+                      <select className={styles.filterSelect}>
+                        <option>This Week</option>
+                        <option>This Month</option>
+                        <option>This Year</option>
+                      </select>
+                    </div>
+                    <div className={styles.mockChart}>
+                      <div className={styles.chartBarWrapper}><div className={styles.chartBar} style={{ height: '0%' }}></div><span>Mon</span></div>
+                      <div className={styles.chartBarWrapper}><div className={styles.chartBar} style={{ height: '0%' }}></div><span>Tue</span></div>
+                      <div className={styles.chartBarWrapper}><div className={styles.chartBar} style={{ height: '0%' }}></div><span>Wed</span></div>
+                      <div className={styles.chartBarWrapper}><div className={styles.chartBar} style={{ height: '0%' }}></div><span>Thu</span></div>
+                      <div className={styles.chartBarWrapper}><div className={styles.chartBar} style={{ height: '0%' }}></div><span>Fri</span></div>
+                      <div className={styles.chartBarWrapper}><div className={styles.chartBar} style={{ height: '0%' }}></div><span>Sat</span></div>
+                      <div className={styles.chartBarWrapper}><div className={styles.chartBar} style={{ height: '0%' }}></div><span>Sun</span></div>
+                    </div>
+                  </div>
+
+                  <div className={styles.activityContainer}>
+                    <div className={styles.tableHeader}>
+                      <h3>Recent Activity</h3>
+                    </div>
+                    <div className={styles.activityList}>
+                      <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px 0', fontSize: '0.9rem' }}>
+                        No recent activity found.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Bookings Table (Mock) */}
                 <div className={styles.tableContainer}>
                   <div className={styles.tableHeader}>
                     <h3>Recent Bookings</h3>
+                    <button className={styles.viewAllBtn}>View All Bookings</button>
                   </div>
                   <table className={styles.dataTable}>
                     <thead>
@@ -171,53 +185,14 @@ export default function AdminDashboard() {
                         <th>Date</th>
                         <th>Amount</th>
                         <th>Status</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td>
-                          <div className={styles.userProfile}>
-                            <div className={styles.userProfileAvatar}>JD</div>
-                            <div>
-                              <div className={styles.userProfileName}>John Doe</div>
-                              <div className={styles.userProfileEmail}>john@example.com</div>
-                            </div>
-                          </div>
+                        <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                          No recent bookings found.
                         </td>
-                        <td>Bangkok 4-Day Tour</td>
-                        <td>Oct 15, 2026</td>
-                        <td>$840.00</td>
-                        <td><span className={`${styles.statusBadge} ${styles.statusActive}`}>Confirmed</span></td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <div className={styles.userProfile}>
-                            <div className={styles.userProfileAvatar} style={{background: '#fce7f3', color: '#be185d'}}>AS</div>
-                            <div>
-                              <div className={styles.userProfileName}>Alice Smith</div>
-                              <div className={styles.userProfileEmail}>alice.s@example.com</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>Phuket Island Hopping</td>
-                        <td>Oct 18, 2026</td>
-                        <td>$320.00</td>
-                        <td><span className={`${styles.statusBadge} ${styles.statusActive}`}>Confirmed</span></td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <div className={styles.userProfile}>
-                            <div className={styles.userProfileAvatar} style={{background: '#e0e7ff', color: '#4338ca'}}>RJ</div>
-                            <div>
-                              <div className={styles.userProfileName}>Robert Jones</div>
-                              <div className={styles.userProfileEmail}>rjones@example.com</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>Custom Malaysia Trip</td>
-                        <td>Nov 02, 2026</td>
-                        <td>$2,450.00</td>
-                        <td><span className={`${styles.statusBadge} ${styles.statusInactive}`}>Pending</span></td>
                       </tr>
                     </tbody>
                   </table>
