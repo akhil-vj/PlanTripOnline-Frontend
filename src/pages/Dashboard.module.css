@@ -166,3 +166,91 @@
   font-weight: 700;
   color: #1e293b;
 }
+
+/* Data Table Styles */
+.tableContainer {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.dataTable th, .dataTable td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dataTable th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.dataTable tr:last-child td {
+  border-bottom: none;
+}
+
+.dataTable tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.roleBadge, .statusBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.roleAdmin {
+  background-color: #ede9fe;
+  color: #7c3aed;
+}
+
+.roleUser {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.statusActive {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.statusInactive {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right: 0.75rem;
+  transition: color 0.2s;
+}
+
+.actionBtn:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.deleteBtn {
+  color: #ef4444;
+}
+
+.deleteBtn:hover {
+  color: #dc2626;
+}

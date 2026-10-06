@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/layout/Layout'
 import CountryLayout from './components/country/CountryLayout'
 import HomePage from './pages/HomePage'
@@ -36,8 +37,16 @@ export default function App() {
         {/* Auth and Dashboard Routes without Header/Footer */}
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignupPage />} />
-        <Route path="admin-dashboard/*" element={<AdminDashboard />} />
-        <Route path="user-dashboard/*" element={<UserDashboard />} />
+        <Route path="admin-dashboard/*" element={
+          <ProtectedRoute adminOnly>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="user-dashboard/*" element={
+          <ProtectedRoute userOnly>
+            <UserDashboard />
+          </ProtectedRoute>
+        } />
 
         <Route element={<Layout />}>
           <Route index element={<HomePage />} />

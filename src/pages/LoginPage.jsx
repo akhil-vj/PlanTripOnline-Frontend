@@ -41,31 +41,34 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    // Hardcoded Admin check
-    if (formData.login_id === 'admin' && formData.password === 'plantrip@123') {
-      localStorage.setItem('token', 'admin-token');
-      localStorage.setItem('userName', 'Admin');
-      navigate('/admin-dashboard');
-      return;
-    }
-
     setLoading(true);
+
+    // Map 'admin' shorthand to the real admin email
+    const emailToSend = formData.login_id === 'admin'
+      ? 'admin@plantriponline.com'
+      : formData.login_id;
+
     try {
       const response = await apiFetch('/api/login', {
         method: 'POST',
-        body: JSON.stringify({ email: formData.login_id, password: formData.password })
+        body: JSON.stringify({ email: emailToSend, password: formData.password })
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Assume token is returned
         if (data.token) {
           localStorage.setItem('token', data.token);
           localStorage.setItem('userName', data.user?.name || data.user?.full_name || formData.login_id);
+          localStorage.setItem('userEmail', data.user?.email || formData.login_id);
         }
-        navigate('/user-dashboard');
+
+        // Redirect based on who logged in
+        if (emailToSend === 'admin@plantriponline.com') {
+          navigate('/admin-dashboard');
+        } else {
+          navigate('/user-dashboard');
+        }
       } else {
         setError(data.message || 'Login failed. Please check your credentials.');
       }

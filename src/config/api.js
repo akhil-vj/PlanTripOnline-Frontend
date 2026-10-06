@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://backend.plantriponline.com';
+export const API_BASE_URL = 'https://backend.plantriponline.com';
 
 /**
  * A common function for making API requests to the backend.
