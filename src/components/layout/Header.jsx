@@ -160,7 +160,7 @@ export default function Header() {
                     Signed in as <strong>{userName}</strong>
                   </div>
                   <div className="dropdown-divider"></div>
-                  <Link to="/dashboard" className="dropdown-item">
+                  <Link to={userName?.toLowerCase() === 'admin' ? "/admin-dashboard" : "/user-dashboard"} className="dropdown-item">
                     Dashboard
                   </Link>
                   <button onClick={handleLogout} className="dropdown-item logout-item">
@@ -242,7 +242,7 @@ export default function Header() {
                   {userName}
                 </summary>
                 <div className="mobile-dropdown-content" style={{ textAlign: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-                  <Link to="/dashboard" className="mobile-dropdown-item">Dashboard</Link>
+                  <Link to={userName?.toLowerCase() === 'admin' ? "/admin-dashboard" : "/user-dashboard"} className="mobile-dropdown-item">Dashboard</Link>
                   <button onClick={handleLogout} className="mobile-dropdown-item" style={{ color: '#ef4444', background: 'none', border: 'none', width: '100%', cursor: 'pointer' }}>
                     Logout
                   </button>
