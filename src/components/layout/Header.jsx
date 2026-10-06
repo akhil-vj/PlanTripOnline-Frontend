@@ -122,15 +122,26 @@ export default function Header() {
               Enquire
             </button>
             {isLoggedIn ? (
-              <div className="user-menu" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span className="user-name" style={{ color: 'white', fontWeight: 500, fontSize: '0.95rem' }}>Hi, {userName}</span>
-                <button className="logout-icon-btn" onClick={handleLogout} title="Logout">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <polyline points="16 17 21 12 16 7" />
-                    <line x1="21" y1="12" x2="9" y2="12" />
-                  </svg>
+              <div className="nav-item user-profile">
+                <button className="nav-button profile-btn" style={{ gap: '8px' }}>
+                  <div className="profile-avatar">
+                    {userName ? userName.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <span className="profile-name" style={{ color: 'white', fontWeight: 500, fontSize: '0.95rem' }}>{userName}</span>
+                  <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </button>
+                <div className="dropdown profile-dropdown">
+                  <div className="profile-dropdown-header">
+                    Signed in as <strong>{userName}</strong>
+                  </div>
+                  <div className="dropdown-divider"></div>
+                  <Link to="/dashboard" className="dropdown-item">
+                    Dashboard
+                  </Link>
+                  <button onClick={handleLogout} className="dropdown-item logout-item">
+                    Logout
+                  </button>
+                </div>
               </div>
             ) : (
               <button className="login-button" onClick={() => navigate('/login')}>
@@ -198,18 +209,20 @@ export default function Header() {
           <div className="mobile-login-section">
             <button className="mobile-enquire-button" onClick={() => navigate('/enquiry')}>Enquire</button>
             {isLoggedIn ? (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px', margin: '15px 0' }}>
-                  <span style={{ color: 'white', fontSize: '1.1rem', fontWeight: 500 }}>Hi, {userName}</span>
-                  <button className="logout-icon-btn" onClick={handleLogout} title="Logout">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                      <polyline points="16 17 21 12 16 7" />
-                      <line x1="21" y1="12" x2="9" y2="12" />
-                    </svg>
+              <details className="mobile-dropdown user-mobile-dropdown">
+                <summary className="nav-mobile-button" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
+                  <div className="profile-avatar" style={{ width: '28px', height: '28px', fontSize: '0.9rem' }}>
+                    {userName ? userName.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  {userName}
+                </summary>
+                <div className="mobile-dropdown-content" style={{ textAlign: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                  <Link to="/dashboard" className="mobile-dropdown-item">Dashboard</Link>
+                  <button onClick={handleLogout} className="mobile-dropdown-item" style={{ color: '#ef4444', background: 'none', border: 'none', width: '100%', cursor: 'pointer' }}>
+                    Logout
                   </button>
                 </div>
-              </>
+              </details>
             ) : (
               <button className="mobile-login-button" onClick={() => navigate('/login')}>
                   <span className="login-button-text">Login</span>
