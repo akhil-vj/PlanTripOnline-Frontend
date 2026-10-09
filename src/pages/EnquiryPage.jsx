@@ -571,10 +571,8 @@ export default function EnquiryPage() {
                     >
                       <option value="">Select your country</option>
                       <option value="malaysia">Malaysia</option>
-                      <option value="singapore">Singapore</option>
                       <option value="thailand">Thailand</option>
-                      <option value="indonesia">Indonesia</option>
-                      <option value="vietnam">Vietnam</option>
+                      <option value="india">India</option>
                       <option value="philippines">Philippines</option>
                       <option value="other">Other</option>
                     </select>
