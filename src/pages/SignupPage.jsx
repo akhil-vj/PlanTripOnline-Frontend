@@ -731,9 +731,7 @@ export default function SignupPage() {
                       <option value="">-- Select --</option>
                       <option value="malaysia">Malaysia</option>
                       <option value="thailand">Thailand</option>
-                      <option value="singapore">Singapore</option>
-                      <option value="vietnam">Vietnam</option>
-                      <option value="indonesia">Indonesia</option>
+
                       <option value="india">India</option>
                       <option value="china">China</option>
                       <option value="japan">Japan</option>

@@ -11,7 +11,7 @@ export default function HomePage() {
     <div className="home-page">
       <Helmet>
         <title>PlanTripOnline - Your Gateway to Southeast Asia | Travel Packages, Hotels & Tours</title>
-        <meta name="description" content="Discover amazing travel packages to Thailand, Singapore, Vietnam, Indonesia & Malaysia. Book hotels, day tours, and customized trips with expert local guides." />
+        <meta name="description" content="Discover amazing travel packages to Thailand, Malaysia & India. Book hotels, day tours, and customized trips with expert local guides." />
       </Helmet>
       
       <Hero />
