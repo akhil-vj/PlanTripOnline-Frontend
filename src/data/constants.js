@@ -365,30 +365,30 @@ const homeDestinations = [
     rating: 4.9
   },
   {
-    name: 'Singapore',
-    country: 'Singapore',
-    image: 'https://plus.unsplash.com/premium_photo-1697730373939-3ebcaa9d295e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170',
-    price: '800',
-    currency: 'SGD',
+    name: 'Kerala',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800',
+    price: '15,000',
+    currency: 'INR',
     duration: '3 Days 2 Nights',
     rating: 4.9
   },
   {
-    name: 'Bali',
-    country: 'Indonesia',
-    image: 'https://www.agoda.com/wp-content/uploads/2024/12/Bali-featured-1244x700.jpg',
-    price: '5,000,000',
-    currency: 'IDR',
+    name: 'Goa',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800',
+    price: '12,000',
+    currency: 'INR',
+    duration: '4 Days 3 Nights',
+    rating: 4.8
+  },
+  {
+    name: 'Rajasthan',
+    country: 'India',
+    image: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800',
+    price: '18,000',
+    currency: 'INR',
     duration: '5 Days 4 Nights',
-    rating: 4.9
-  },
-  {
-    name: 'Hanoi',
-    country: 'Vietnam',
-    image: 'https://images.travelandleisureasia.com/wp-content/uploads/sites/3/2024/07/03150728/Hanoi-Itinerary-9.jpg?tr=w-1920',
-    price: '4,500,000',
-    currency: 'VND',
-    duration: '3 Days 2 Nights',
     rating: 4.7
   }
 ];

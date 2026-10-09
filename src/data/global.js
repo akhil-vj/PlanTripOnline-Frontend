@@ -67,6 +67,6 @@ export const footerData = {
 };
 
 export function formatCurrency(amount, currency) {
-  const symbols = { MYR: 'RM', THB: '฿', SGD: 'S$', VND: '₫', IDR: 'Rp' };
+  const symbols = { MYR: 'RM', THB: '฿', INR: '₹' };
   return `${symbols[currency] || currency} ${Number(amount).toLocaleString()}`;
 }
