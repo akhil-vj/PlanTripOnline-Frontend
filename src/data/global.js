@@ -21,9 +21,7 @@ export const offices = [
 export const featuredCountries = [
   { name: 'Thailand', slug: 'thailand', flag: '🇹🇭', tourCount: '15+', packageCount: '8' },
   { name: 'Malaysia', slug: 'malaysia', flag: '🇲🇾', tourCount: '12+', packageCount: '6' },
-  { name: 'Singapore', slug: 'singapore', flag: '🇸🇬', tourCount: '8+', packageCount: '4' },
-  { name: 'Vietnam', slug: 'vietnam', flag: '🇻🇳', tourCount: '10+', packageCount: '5' },
-  { name: 'Indonesia', slug: 'indonesia', flag: '🇮🇩', tourCount: '9+', packageCount: '4' }
+  { name: 'India', slug: 'india', flag: '🇮🇳', tourCount: '10+', packageCount: '5' }
 ];
 
 export const navigationItems = [
