@@ -17,16 +17,12 @@ const dummyCountryData = (name, slug, flag, currency) => ({
 });
 
 export const malaysiaData = dummyCountryData('Malaysia', 'malaysia', '🇲🇾', 'MYR');
-export const singaporeData = dummyCountryData('Singapore', 'singapore', '🇸🇬', 'SGD');
-export const vietnamData = dummyCountryData('Vietnam', 'vietnam', '🇻🇳', 'VND');
-export const indonesiaData = dummyCountryData('Indonesia', 'indonesia', '🇮🇩', 'IDR');
+export const indiaData = dummyCountryData('India', 'india', '🇮🇳', 'INR');
 
 const countryDataMap = {
   thailand: thailandData,
   malaysia: malaysiaData,
-  singapore: singaporeData,
-  vietnam: vietnamData,
-  indonesia: indonesiaData,
+  india: indiaData,
 };
 
 export const getCountryData = (slug) => {

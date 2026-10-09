@@ -447,19 +447,15 @@ const homeTours = [
 const featuredCountries = [
   { name: 'Malaysia' },
   { name: 'Thailand' },
-  { name: 'Singapore' },
-  { name: 'Vietnam' },
-  { name: 'Indonesia' }
+  { name: 'India' }
 ];
 
-const navigationCountries = ['Thailand', 'Malaysia', 'Singapore', 'Vietnam', 'Indonesia'];
+const navigationCountries = ['Thailand', 'Malaysia', 'India'];
 
 const hotelLocations = [
   { name: 'Thailand Hotels', country: 'Thailand' },
   { name: 'Malaysia Hotels', country: 'Malaysia' },
-  { name: 'Singapore Hotels', country: 'Singapore' },
-  { name: 'Vietnam Hotels', country: 'Vietnam' },
-  { name: 'Indonesia Hotels', country: 'Indonesia' }
+  { name: 'India Hotels', country: 'India' }
 ];
 
 const navigationItems = [

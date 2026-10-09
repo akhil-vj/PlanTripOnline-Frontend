@@ -6,7 +6,7 @@ export const homeDestinations = [
   { name: 'Bangkok', country: 'Thailand', image: 'https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcR0FKha8f6Iqy1N8equBS_8XuXGlo_iyFVRsd7yJTexqSN6CUIKQZwjVJDqzUe9iVSehH5qE3GBPhYKj2etPpJT2Hu94wUpuSbdXjt0PQ', price: '8,500', currency: 'THB', duration: '3 Days 2 Nights', rating: 4.7 },
   { name: 'Phuket', country: 'Thailand', image: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=800', price: '10,000', currency: 'THB', duration: '4 Days 3 Nights', rating: 4.8 },
   { name: 'Chiang Mai', country: 'Thailand', image: 'https://static.independent.co.uk/2025/08/29/14/57/iStock-2181663837.jpeg?quality=75&width=1368&crop=3%3A2%2Csmart&auto=webp', price: '7,500', currency: 'THB', duration: '3 Days 2 Nights', rating: 4.9 },
-  { name: 'Singapore', country: 'Singapore', image: 'https://plus.unsplash.com/premium_photo-1697730373939-3ebcaa9d295e?auto=format&fit=crop&q=80&w=1170', price: '800', currency: 'SGD', duration: '3 Days 2 Nights', rating: 4.9 },
+  { name: 'Kerala', country: 'India', image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800', price: '15,000', currency: 'INR', duration: '3 Days 2 Nights', rating: 4.9 },
 ];
 
 export const homeTours = [
