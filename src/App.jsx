@@ -28,6 +28,7 @@ import CustomizedPackages from './components/country/CustomizedPackages'
 import TourDetail from './components/country/TourDetail'
 import PackageDetail from './components/country/PackageDetail'
 import ScrollToTop from './components/ScrollToTop'
+import PlanTripPage from './pages/PlanTripPage'
 
 export default function App() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
         } />
 
         <Route path="enquiry" element={<EnquiryPage />} />
+        <Route path="plan-trip" element={<PlanTripPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
         
         <Route element={<Layout />}>

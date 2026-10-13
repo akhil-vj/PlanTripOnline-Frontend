@@ -21,7 +21,7 @@ export default function CountryPage() {
         <div className="hero-bg-text">{data.name}</div>
         <div className="hero-content">
           <h1 id="hero-heading">
-            <span className="gradient-line">Explore {data.name}</span>
+            <span className="gradient-line">{data.heroTitle || `Explore ${data.name}`}</span>
           </h1>
           <p id="hero-subheading">{data.tagline}</p>
         </div>

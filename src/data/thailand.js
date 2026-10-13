@@ -49,6 +49,7 @@ export const thailandData = {
   flag: '🇹🇭',
   currency: 'THB',
   heroImage: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1600',
+  heroTitle: 'Amazing Thailand Experience',
   tagline: 'Land of Smiles',
   description: 'From vibrant Bangkok streets to pristine island beaches, Thailand offers a perfect blend of culture, cuisine, and adventure.',
   dayTours: ThailandDayTours,

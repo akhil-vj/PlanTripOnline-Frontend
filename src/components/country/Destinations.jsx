@@ -1,9 +1,10 @@
-import { useOutletContext, Link } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
 export default function Destinations() {
   const data = useOutletContext();
   const destinations = data.destinations || [];
+  const navigate = useNavigate();
 
   return (
     <div className="destinations-page">
@@ -304,7 +305,7 @@ export default function Destinations() {
       <div className="dest-hero">
         <div className="dest-hero-bg" style={{ backgroundImage: `url(${data.heroImage})` }}></div>
         <div className="dest-hero-content">
-          <h1>Explore <span>{data.name}</span></h1>
+          <h1>{data.heroTitle || `Explore ${data.name}`}</h1>
           <p>Discover the most captivating destinations, from bustling cities to serene islands and ancient temples.</p>
           <div className="dest-stats">
             <div className="dest-stat">
@@ -343,9 +344,11 @@ export default function Destinations() {
                       <span key={i} className="dest-highlight-tag">{h}</span>
                     ))}
                   </div>
-                  <Link to="/enquiry" className="dest-explore-btn">
+                  <button
+                    onClick={() => navigate('/plan-trip', { state: { destination: dest.name, country: data.name, image: dest.image } })}
+                    className="dest-explore-btn">
                     Plan a Trip ➔
-                  </Link>
+                  </button>
                 </div>
               </div>
             ))}
@@ -354,7 +357,7 @@ export default function Destinations() {
           <div className="dest-empty">
             <h3>Destinations Coming Soon!</h3>
             <p>We're mapping out the best places to visit in {data.name}.</p>
-            <Link to="/enquiry">Talk to an Expert</Link>
+            <button onClick={() => navigate('/plan-trip', { state: { destination: data.name, country: data.name } })} style={{ display: 'inline-block', background: 'linear-gradient(to right, #f97316, #fb923c)', color: 'white', padding: '14px 30px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 700, boxShadow: '0 8px 20px rgba(249,115,22,0.3)' }}>Talk to an Expert</button>
           </div>
         )}
       </div>
