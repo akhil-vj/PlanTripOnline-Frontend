@@ -29,6 +29,7 @@ import TourDetail from './components/country/TourDetail'
 import PackageDetail from './components/country/PackageDetail'
 import ScrollToTop from './components/ScrollToTop'
 import PlanTripPage from './pages/PlanTripPage'
+import BookingPage from './pages/BookingPage'
 
 export default function App() {
   return (
@@ -51,6 +52,7 @@ export default function App() {
 
         <Route path="enquiry" element={<EnquiryPage />} />
         <Route path="plan-trip" element={<PlanTripPage />} />
+        <Route path="book-trip" element={<BookingPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
         
         <Route element={<Layout />}>
