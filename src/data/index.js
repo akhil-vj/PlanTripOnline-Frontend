@@ -1,6 +1,7 @@
 import { thailandData } from './thailand';
+import { malaysiaData } from './malaysia';
 
-// Dummy data for other countries for now to allow routing to work
+// Dummy data for countries without full data yet
 const dummyCountryData = (name, slug, flag, currency, heroTitle) => ({
   name,
   slug,
@@ -17,7 +18,6 @@ const dummyCountryData = (name, slug, flag, currency, heroTitle) => ({
   transfers: [],
 });
 
-export const malaysiaData = dummyCountryData('Malaysia', 'malaysia', '🇲🇾', 'MYR', 'Truely Malaysia');
 export const indiaData = dummyCountryData('India', 'india', '🇮🇳', 'INR', 'Incredible India');
 
 const countryDataMap = {
