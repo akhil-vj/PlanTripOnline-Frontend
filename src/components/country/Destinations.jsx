@@ -98,205 +98,181 @@ export default function Destinations() {
         .destinations-page .dest-grid-section {
           max-width: 1280px;
           margin: 0 auto;
-          padding: 60px 1.5rem;
+          padding: 40px 1.5rem;
         }
 
         .destinations-page .dest-grid {
           display: grid;
-          gap: 30px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
         }
 
         .destinations-page .dest-card {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
           background: white;
-          border-radius: 16px;
+          border-radius: 14px;
           overflow: hidden;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-          transition: transform 0.3s, box-shadow 0.3s;
-          min-height: 320px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+          transition: transform 0.25s, box-shadow 0.25s;
+          display: flex;
+          flex-direction: column;
         }
 
         .destinations-page .dest-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 12px 40px rgba(0,0,0,0.12);
-        }
-
-        .destinations-page .dest-card:nth-child(even) {
-          direction: rtl;
-        }
-
-        .destinations-page .dest-card:nth-child(even) > * {
-          direction: ltr;
+          transform: translateY(-4px);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.13);
         }
 
         .destinations-page .dest-card-img {
           position: relative;
           overflow: hidden;
+          height: 180px;
+          flex-shrink: 0;
         }
 
         .destinations-page .dest-card-img img {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transition: transform 0.5s ease;
+          transition: transform 0.4s ease;
         }
 
         .destinations-page .dest-card:hover .dest-card-img img {
-          transform: scale(1.08);
+          transform: scale(1.07);
         }
 
         .destinations-page .dest-card-img .dest-badge {
           position: absolute;
-          top: 20px;
-          left: 20px;
+          top: 12px;
+          left: 12px;
           background: #ff9500;
           color: white;
-          padding: 6px 14px;
-          border-radius: 25px;
-          font-size: 0.8rem;
+          padding: 4px 10px;
+          border-radius: 20px;
+          font-size: 0.72rem;
           font-weight: 700;
-          letter-spacing: 0.5px;
-          box-shadow: 0 4px 10px rgba(255,149,0,0.3);
+          letter-spacing: 0.4px;
+          box-shadow: 0 2px 8px rgba(255,149,0,0.3);
         }
 
         .destinations-page .dest-card-img .dest-rating {
           position: absolute;
-          bottom: 20px;
-          left: 20px;
-          background: rgba(0,0,0,0.7);
+          bottom: 10px;
+          right: 10px;
+          background: rgba(0,0,0,0.65);
           color: #fbbf24;
-          padding: 6px 12px;
-          border-radius: 8px;
-          font-size: 0.85rem;
+          padding: 4px 9px;
+          border-radius: 6px;
+          font-size: 0.78rem;
           font-weight: 600;
-          backdrop-filter: blur(6px);
+          backdrop-filter: blur(4px);
         }
 
         .destinations-page .dest-card-body {
-          padding: 40px;
+          padding: 16px 18px 18px;
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          flex: 1;
         }
 
         .destinations-page .dest-card-body h3 {
-          font-size: 2rem;
-          font-weight: 800;
+          font-size: 1.1rem;
+          font-weight: 700;
           color: #1e293b;
-          margin-bottom: 8px;
+          margin-bottom: 4px;
         }
 
         .destinations-page .dest-card-locations {
-          font-size: 0.9rem;
+          font-size: 0.78rem;
           color: #94a3b8;
-          margin-bottom: 15px;
+          margin-bottom: 8px;
           font-weight: 500;
         }
 
         .destinations-page .dest-card-body p {
           color: #64748b;
-          line-height: 1.7;
-          margin-bottom: 20px;
-          font-size: 1rem;
+          line-height: 1.55;
+          margin-bottom: 12px;
+          font-size: 0.83rem;
+          flex: 1;
         }
 
         .destinations-page .dest-highlights {
           display: flex;
           flex-wrap: wrap;
-          gap: 8px;
-          margin-bottom: 25px;
+          gap: 5px;
+          margin-bottom: 14px;
         }
 
         .destinations-page .dest-highlight-tag {
           background: #f0f9ff;
           color: #0369a1;
           border: 1px solid #bae6fd;
-          padding: 5px 12px;
-          border-radius: 20px;
-          font-size: 0.8rem;
+          padding: 3px 9px;
+          border-radius: 12px;
+          font-size: 0.72rem;
           font-weight: 500;
         }
 
         .destinations-page .dest-explore-btn {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
           background: #1e293b;
           color: white;
-          padding: 12px 28px;
-          border-radius: 50px;
-          text-decoration: none;
+          padding: 9px 18px;
+          border-radius: 25px;
+          border: none;
+          cursor: pointer;
           font-weight: 600;
-          font-size: 0.95rem;
-          transition: all 0.3s;
+          font-size: 0.82rem;
+          transition: all 0.25s;
           align-self: flex-start;
         }
 
         .destinations-page .dest-explore-btn:hover {
           background: #ff9500;
-          transform: translateX(4px);
-          box-shadow: 0 6px 15px rgba(255,149,0,0.3);
+          transform: translateX(3px);
+          box-shadow: 0 4px 12px rgba(255,149,0,0.3);
         }
 
         .destinations-page .dest-empty {
           text-align: center;
-          padding: 80px 20px;
+          padding: 60px 20px;
           background: white;
-          border-radius: 20px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+          border-radius: 16px;
+          box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+          grid-column: 1 / -1;
         }
 
         .destinations-page .dest-empty h3 {
-          font-size: 1.8rem;
+          font-size: 1.5rem;
           color: #1e293b;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
         }
 
         .destinations-page .dest-empty p {
           color: #64748b;
-          margin-bottom: 25px;
-          font-size: 1.1rem;
+          margin-bottom: 20px;
+          font-size: 1rem;
         }
 
-        .destinations-page .dest-empty a {
-          display: inline-block;
-          background: linear-gradient(to right, #f97316, #fb923c);
-          color: white;
-          padding: 14px 30px;
-          border-radius: 50px;
-          text-decoration: none;
-          font-weight: 700;
-          box-shadow: 0 8px 20px rgba(249,115,22,0.3);
+        @media (max-width: 1024px) {
+          .destinations-page .dest-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
         }
 
-        @media (max-width: 900px) {
-          .destinations-page .dest-card {
+        @media (max-width: 640px) {
+          .destinations-page .dest-grid {
             grid-template-columns: 1fr;
           }
 
-          .destinations-page .dest-card:nth-child(even) {
-            direction: ltr;
-          }
-
-          .destinations-page .dest-card-img {
-            height: 250px;
-          }
-
           .destinations-page .dest-hero-content h1 {
-            font-size: 2.2rem;
+            font-size: 2rem;
           }
 
           .destinations-page .dest-stats {
-            gap: 25px;
-          }
-
-          .destinations-page .dest-card-body {
-            padding: 25px;
-          }
-
-          .destinations-page .dest-card-body h3 {
-            font-size: 1.5rem;
+            gap: 20px;
           }
         }
       `}</style>
@@ -331,7 +307,7 @@ export default function Destinations() {
             {destinations.map(dest => (
               <div key={dest.id} className="dest-card">
                 <div className="dest-card-img">
-                  <img src={dest.image} alt={dest.name} />
+                  <img src={dest.image} alt={dest.name} loading="lazy" />
                   {dest.badge && <span className="dest-badge">{dest.badge}</span>}
                   {dest.rating && <span className="dest-rating">★ {dest.rating}</span>}
                 </div>
@@ -340,12 +316,12 @@ export default function Destinations() {
                   <div className="dest-card-locations">📍 {dest.locations}</div>
                   <p>{dest.description}</p>
                   <div className="dest-highlights">
-                    {dest.highlights?.map((h, i) => (
+                    {dest.highlights?.slice(0, 3).map((h, i) => (
                       <span key={i} className="dest-highlight-tag">{h}</span>
                     ))}
                   </div>
                   <button
-                    onClick={() => navigate('/plan-trip', { state: { destination: dest.name, country: data.name, image: dest.image } })}
+                    onClick={() => navigate('/destination-tours', { state: { destination: dest.name, country: data.name, countrySlug: data.slug, image: dest.image } })}
                     className="dest-explore-btn">
                     Plan a Trip ➔
                   </button>
