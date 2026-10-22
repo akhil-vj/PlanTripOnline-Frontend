@@ -550,7 +550,7 @@ export default function Destinations() {
                     ))}
                   </div>
                   <button
-                    onClick={() => navigate('/destination-tours', { state: { destination: dest.name, country: data.name, countrySlug: data.slug, image: dest.image } })}
+                    onClick={() => navigate(`/${data.slug}/destinations/${dest.id}`, { state: { dest, country: data } })}
                     className="dest-explore-btn"
                   >
                     Plan a Trip ➔
