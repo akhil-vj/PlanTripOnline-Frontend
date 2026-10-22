@@ -1,14 +1,27 @@
+import { useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
 export default function Transfers() {
   const data = useOutletContext();
   const transfers = data.transfers || [];
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const q = searchQuery.toLowerCase();
+  const filteredTransfers = q
+    ? transfers.filter(t =>
+        t.title?.toLowerCase().includes(q) ||
+        t.from?.toLowerCase().includes(q) ||
+        t.to?.toLowerCase().includes(q) ||
+        t.description?.toLowerCase().includes(q) ||
+        t.vehicles?.some(v => v.toLowerCase().includes(q))
+      )
+    : transfers;
 
   return (
     <div className="transfers-page">
       <Helmet>
-        <title>{data.name} Transfers & Transport - PlantripOnline</title>
+        <title>{data.name} Transfers &amp; Transport - PlantripOnline</title>
       </Helmet>
 
       <style>{`
@@ -117,10 +130,66 @@ export default function Transfers() {
           font-size: 0.8rem;
         }
 
+        .transfers-page .tf-search-bar {
+          max-width: 1280px;
+          margin: 24px auto 0;
+          padding: 0 1.5rem;
+        }
+
+        .transfers-page .tf-search-inner {
+          background: white;
+          border-radius: 14px;
+          padding: 14px 22px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          border: 1.5px solid #e2e8f0;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .transfers-page .tf-search-inner:focus-within {
+          border-color: #f97316;
+          box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+        }
+
+        .transfers-page .tf-search-icon { font-size: 1.1rem; color: #94a3b8; flex-shrink: 0; }
+
+        .transfers-page .tf-search-input {
+          flex: 1;
+          border: none;
+          outline: none;
+          font-size: 0.95rem;
+          color: #1e293b;
+          font-weight: 500;
+          background: transparent;
+        }
+
+        .transfers-page .tf-search-input::placeholder { color: #94a3b8; }
+
+        .transfers-page .tf-search-count {
+          font-size: 0.85rem;
+          color: #94a3b8;
+          white-space: nowrap;
+        }
+
+        .transfers-page .tf-search-clear {
+          background: #f1f5f9;
+          border: none;
+          color: #64748b;
+          cursor: pointer;
+          padding: 5px 11px;
+          border-radius: 8px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          transition: all 0.2s;
+        }
+        .transfers-page .tf-search-clear:hover { background: #fee2e2; color: #ef4444; }
+
         .transfers-page .tf-grid-section {
           max-width: 1280px;
           margin: 0 auto;
-          padding: 50px 1.5rem 60px;
+          padding: 30px 1.5rem 60px;
         }
 
         .transfers-page .tf-grid {
@@ -311,7 +380,7 @@ export default function Transfers() {
           </div>
           <div className="tf-benefit">
             <div className="tf-benefit-icon">👤</div>
-            <div className="tf-benefit-text">Meet & Greet<small>Driver waits at arrivals</small></div>
+            <div className="tf-benefit-text">Meet &amp; Greet<small>Driver waits at arrivals</small></div>
           </div>
           <div className="tf-benefit">
             <div className="tf-benefit-icon">⏰</div>
@@ -324,11 +393,31 @@ export default function Transfers() {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="tf-search-bar">
+        <div className="tf-search-inner">
+          <span className="tf-search-icon">🔍</span>
+          <input
+            className="tf-search-input"
+            type="text"
+            placeholder="Search transfers by route, destination, vehicle type…"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+          <span className="tf-search-count">
+            <strong style={{ color: '#1e293b' }}>{filteredTransfers.length}</strong> transfers
+          </span>
+          {searchQuery && (
+            <button className="tf-search-clear" onClick={() => setSearchQuery('')}>✕ Clear</button>
+          )}
+        </div>
+      </div>
+
       {/* Grid */}
       <div className="tf-grid-section">
-        {transfers.length > 0 ? (
+        {filteredTransfers.length > 0 ? (
           <div className="tf-grid">
-            {transfers.map(transfer => (
+            {filteredTransfers.map(transfer => (
               <div key={transfer.id} className="tf-card">
                 <div className="tf-card-img">
                   <img src={transfer.image} alt={transfer.title} />
@@ -364,9 +453,24 @@ export default function Transfers() {
           </div>
         ) : (
           <div className="tf-empty">
-            <h3>Transfers Coming Soon!</h3>
-            <p>We are arranging the most reliable transport options for {data.name}.</p>
-            <Link to="/enquiry">Request a Transfer</Link>
+            {searchQuery ? (
+              <>
+                <h3>No transfers matching "{searchQuery}"</h3>
+                <p>Try a different keyword or browse all transfers.</p>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  style={{ background: 'linear-gradient(to right,#f97316,#fb923c)', color: 'white', padding: '14px 30px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 700 }}
+                >
+                  Clear Search
+                </button>
+              </>
+            ) : (
+              <>
+                <h3>Transfers Coming Soon!</h3>
+                <p>We are arranging the most reliable transport options for {data.name}.</p>
+                <Link to="/enquiry">Request a Transfer</Link>
+              </>
+            )}
           </div>
         )}
       </div>

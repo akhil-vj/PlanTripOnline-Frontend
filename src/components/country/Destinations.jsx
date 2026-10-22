@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
@@ -5,6 +6,17 @@ export default function Destinations() {
   const data = useOutletContext();
   const destinations = data.destinations || [];
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const q = searchQuery.toLowerCase();
+  const filteredDestinations = q
+    ? destinations.filter(d =>
+        d.name?.toLowerCase().includes(q) ||
+        d.description?.toLowerCase().includes(q) ||
+        d.locations?.toLowerCase().includes(q) ||
+        d.highlights?.some(h => h.toLowerCase().includes(q))
+      )
+    : destinations;
 
   return (
     <div className="destinations-page">
@@ -20,8 +32,8 @@ export default function Destinations() {
 
         .destinations-page .dest-hero {
           position: relative;
-          height: 50vh;
-          min-height: 380px;
+          height: 100vh;
+          min-height: 620px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -35,70 +47,252 @@ export default function Destinations() {
           inset: 0;
           background-size: cover;
           background-position: center;
-          filter: brightness(0.5);
-          transform: scale(1.05);
+          filter: brightness(0.38);
+          transform: scale(1.08);
+          transition: transform 8s ease;
+        }
+
+        .destinations-page .dest-hero:hover .dest-hero-bg {
+          transform: scale(1.12);
+        }
+
+        .destinations-page .dest-hero-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            to bottom,
+            rgba(0,0,0,0.1) 0%,
+            rgba(15,23,42,0.35) 50%,
+            rgba(15,23,42,0.75) 100%
+          );
         }
 
         .destinations-page .dest-hero-content {
           position: relative;
           z-index: 2;
-          max-width: 700px;
-          padding: 0 20px;
-          animation: destFadeUp 0.8s ease;
+          max-width: 820px;
+          padding: 0 24px;
+          animation: destFadeUp 0.9s ease;
         }
 
         @keyframes destFadeUp {
-          from { opacity: 0; transform: translateY(30px); }
+          from { opacity: 0; transform: translateY(40px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
+        .destinations-page .dest-hero-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(251,146,60,0.18);
+          border: 1px solid rgba(251,146,60,0.35);
+          color: #fdba74;
+          padding: 7px 18px;
+          border-radius: 50px;
+          font-size: 0.82rem;
+          font-weight: 700;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          margin-bottom: 22px;
+          backdrop-filter: blur(8px);
+          animation: destFadeUp 0.7s ease;
+        }
+
         .destinations-page .dest-hero-content h1 {
-          font-size: 3.5rem;
-          font-weight: 800;
-          margin-bottom: 15px;
-          letter-spacing: -1px;
-          text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+          font-size: 4.5rem;
+          font-weight: 900;
+          margin-bottom: 18px;
+          letter-spacing: -2px;
+          line-height: 1.05;
+          text-shadow: 0 4px 30px rgba(0,0,0,0.4);
         }
 
         .destinations-page .dest-hero-content h1 span {
           color: #fb923c;
+          position: relative;
+        }
+
+        .destinations-page .dest-hero-content h1 span::after {
+          content: '';
+          position: absolute;
+          bottom: -4px;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(to right, #f97316, #fb923c);
+          border-radius: 2px;
+          opacity: 0.7;
         }
 
         .destinations-page .dest-hero-content p {
-          font-size: 1.2rem;
-          opacity: 0.9;
-          line-height: 1.6;
+          font-size: 1.25rem;
+          opacity: 0.88;
+          line-height: 1.65;
+          max-width: 600px;
+          margin: 0 auto 36px;
+          font-weight: 400;
         }
 
         .destinations-page .dest-stats {
           display: flex;
           justify-content: center;
-          gap: 40px;
-          margin-top: 30px;
+          gap: 16px;
+          flex-wrap: wrap;
         }
 
         .destinations-page .dest-stat {
+          background: rgba(255,255,255,0.1);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255,255,255,0.18);
+          border-radius: 16px;
+          padding: 16px 28px;
           text-align: center;
+          min-width: 120px;
+          transition: background 0.2s;
+        }
+
+        .destinations-page .dest-stat:hover {
+          background: rgba(255,255,255,0.16);
         }
 
         .destinations-page .dest-stat-number {
-          font-size: 2rem;
-          font-weight: 800;
+          font-size: 2.2rem;
+          font-weight: 900;
           color: #fb923c;
           display: block;
+          line-height: 1;
+          margin-bottom: 4px;
         }
 
         .destinations-page .dest-stat-label {
-          font-size: 0.85rem;
-          opacity: 0.8;
+          font-size: 0.75rem;
+          opacity: 0.75;
           text-transform: uppercase;
-          letter-spacing: 1px;
+          letter-spacing: 1.5px;
+          font-weight: 600;
+        }
+
+        .destinations-page .dest-scroll-indicator {
+          position: absolute;
+          bottom: 36px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 3;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          color: rgba(255,255,255,0.5);
+          font-size: 0.72rem;
+          font-weight: 600;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          animation: destBounce 2s infinite;
+        }
+
+        .destinations-page .dest-scroll-dot {
+          width: 28px;
+          height: 44px;
+          border: 2px solid rgba(255,255,255,0.3);
+          border-radius: 14px;
+          display: flex;
+          justify-content: center;
+          padding-top: 6px;
+        }
+
+        .destinations-page .dest-scroll-dot::after {
+          content: '';
+          width: 4px;
+          height: 8px;
+          background: rgba(255,255,255,0.6);
+          border-radius: 2px;
+          animation: destScroll 1.5s infinite;
+        }
+
+        @keyframes destScroll {
+          0% { transform: translateY(0); opacity: 1; }
+          100% { transform: translateY(12px); opacity: 0; }
+        }
+
+        @keyframes destBounce {
+          0%, 100% { transform: translateX(-50%) translateY(0); }
+          50% { transform: translateX(-50%) translateY(6px); }
+        }
+
+        .destinations-page .dest-search-bar {
+          max-width: 1280px;
+          margin: -30px auto 0;
+          padding: 0 1.5rem;
+          position: relative;
+          z-index: 3;
+        }
+
+        .destinations-page .dest-search-inner {
+          background: white;
+          border-radius: 16px;
+          padding: 16px 24px;
+          box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          border: 1.5px solid transparent;
+          transition: border-color 0.2s;
+        }
+
+        .destinations-page .dest-search-inner:focus-within {
+          border-color: #f97316;
+          box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+        }
+
+        .destinations-page .dest-search-icon {
+          font-size: 1.2rem;
+          color: #94a3b8;
+          flex-shrink: 0;
+        }
+
+        .destinations-page .dest-search-input {
+          flex: 1;
+          border: none;
+          outline: none;
+          font-size: 1rem;
+          color: #1e293b;
+          font-weight: 500;
+          background: transparent;
+        }
+
+        .destinations-page .dest-search-input::placeholder {
+          color: #94a3b8;
+          font-weight: 400;
+        }
+
+        .destinations-page .dest-search-count {
+          font-size: 0.85rem;
+          color: #94a3b8;
+          font-weight: 500;
+          white-space: nowrap;
+        }
+
+        .destinations-page .dest-search-clear {
+          background: #f1f5f9;
+          border: none;
+          color: #64748b;
+          cursor: pointer;
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          transition: all 0.2s;
+        }
+
+        .destinations-page .dest-search-clear:hover {
+          background: #fee2e2;
+          color: #ef4444;
         }
 
         .destinations-page .dest-grid-section {
           max-width: 1280px;
           margin: 0 auto;
-          padding: 40px 1.5rem;
+          padding: 30px 1.5rem 40px;
         }
 
         .destinations-page .dest-grid {
@@ -268,11 +462,17 @@ export default function Destinations() {
           }
 
           .destinations-page .dest-hero-content h1 {
-            font-size: 2rem;
+            font-size: 2.6rem;
+            letter-spacing: -1px;
           }
 
           .destinations-page .dest-stats {
-            gap: 20px;
+            gap: 10px;
+          }
+
+          .destinations-page .dest-stat {
+            padding: 12px 18px;
+            min-width: 90px;
           }
         }
       `}</style>
@@ -280,9 +480,13 @@ export default function Destinations() {
       {/* Hero Section */}
       <div className="dest-hero">
         <div className="dest-hero-bg" style={{ backgroundImage: `url(${data.heroImage})` }}></div>
+        <div className="dest-hero-overlay"></div>
         <div className="dest-hero-content">
-          <h1>{data.heroTitle || `Explore ${data.name}`}</h1>
-          <p>Discover the most captivating destinations, from bustling cities to serene islands and ancient temples.</p>
+          <div className="dest-hero-eyebrow">
+            🌍 Explore {data.name}
+          </div>
+          <h1>{data.heroTitle || <><span>{data.name}</span> Awaits You</>}</h1>
+          <p>Discover the most captivating destinations — from bustling cities and ancient temples to serene islands and jungle hideaways.</p>
           <div className="dest-stats">
             <div className="dest-stat">
               <span className="dest-stat-number">{destinations.length}</span>
@@ -298,13 +502,38 @@ export default function Destinations() {
             </div>
           </div>
         </div>
+        <div className="dest-scroll-indicator">
+          <div className="dest-scroll-dot"></div>
+          Scroll
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="dest-search-bar">
+        <div className="dest-search-inner">
+          <span className="dest-search-icon">🔍</span>
+          <input
+            className="dest-search-input"
+            type="text"
+            placeholder="Search destinations, highlights, locations…"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+          <span className="dest-search-count">
+            <strong style={{ color: '#1e293b' }}>{filteredDestinations.length}</strong>{' '}
+            destination{filteredDestinations.length !== 1 ? 's' : ''}
+          </span>
+          {searchQuery && (
+            <button className="dest-search-clear" onClick={() => setSearchQuery('')}>✕ Clear</button>
+          )}
+        </div>
       </div>
 
       {/* Grid */}
       <div className="dest-grid-section">
-        {destinations.length > 0 ? (
+        {filteredDestinations.length > 0 ? (
           <div className="dest-grid">
-            {destinations.map(dest => (
+            {filteredDestinations.map(dest => (
               <div key={dest.id} className="dest-card">
                 <div className="dest-card-img">
                   <img src={dest.image} alt={dest.name} loading="lazy" />
@@ -322,7 +551,8 @@ export default function Destinations() {
                   </div>
                   <button
                     onClick={() => navigate('/destination-tours', { state: { destination: dest.name, country: data.name, countrySlug: data.slug, image: dest.image } })}
-                    className="dest-explore-btn">
+                    className="dest-explore-btn"
+                  >
                     Plan a Trip ➔
                   </button>
                 </div>
@@ -331,9 +561,29 @@ export default function Destinations() {
           </div>
         ) : (
           <div className="dest-empty">
-            <h3>Destinations Coming Soon!</h3>
-            <p>We're mapping out the best places to visit in {data.name}.</p>
-            <button onClick={() => navigate('/plan-trip', { state: { destination: data.name, country: data.name } })} style={{ display: 'inline-block', background: 'linear-gradient(to right, #f97316, #fb923c)', color: 'white', padding: '14px 30px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 700, boxShadow: '0 8px 20px rgba(249,115,22,0.3)' }}>Talk to an Expert</button>
+            {searchQuery ? (
+              <>
+                <h3>No results for "{searchQuery}"</h3>
+                <p>Try a different keyword or browse all destinations.</p>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  style={{ display: 'inline-block', background: 'linear-gradient(to right, #f97316, #fb923c)', color: 'white', padding: '14px 30px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 700, boxShadow: '0 8px 20px rgba(249,115,22,0.3)' }}
+                >
+                  Clear Search
+                </button>
+              </>
+            ) : (
+              <>
+                <h3>Destinations Coming Soon!</h3>
+                <p>We're mapping out the best places to visit in {data.name}.</p>
+                <button
+                  onClick={() => navigate('/plan-trip', { state: { destination: data.name, country: data.name } })}
+                  style={{ display: 'inline-block', background: 'linear-gradient(to right, #f97316, #fb923c)', color: 'white', padding: '14px 30px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 700, boxShadow: '0 8px 20px rgba(249,115,22,0.3)' }}
+                >
+                  Talk to an Expert
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

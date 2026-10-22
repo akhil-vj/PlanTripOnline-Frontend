@@ -7,12 +7,20 @@ export default function DayTours() {
   const tours = data.dayTours || [];
 
   const [activeLocation, setActiveLocation] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const locations = [...new Set(tours.map(t => t.location).filter(Boolean))];
 
-  const filteredTours = activeLocation === 'all'
-    ? tours
-    : tours.filter(t => t.location === activeLocation);
+  const filteredTours = tours.filter(t => {
+    const locMatch = activeLocation === 'all' || t.location === activeLocation;
+    const q = searchQuery.toLowerCase();
+    const searchMatch = !q ||
+      t.title?.toLowerCase().includes(q) ||
+      t.description?.toLowerCase().includes(q) ||
+      t.location?.toLowerCase().includes(q) ||
+      t.features?.some(f => f.toLowerCase().includes(q));
+    return locMatch && searchMatch;
+  });
 
   return (
     <div className="daytours-page">
@@ -87,13 +95,68 @@ export default function DayTours() {
         .daytours-page .dt-filter-inner {
           background: white;
           border-radius: 16px;
-          padding: 20px 30px;
+          padding: 18px 24px;
           box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .daytours-page .dt-filter-top {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+
+        .daytours-page .dt-search-wrap {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 10px;
+          padding: 9px 14px;
+          transition: border-color 0.2s;
+        }
+
+        .daytours-page .dt-search-wrap:focus-within {
+          border-color: #f97316;
+          box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+        }
+
+        .daytours-page .dt-search-icon { font-size: 1rem; color: #94a3b8; }
+
+        .daytours-page .dt-search-input {
+          flex: 1;
+          border: none;
+          outline: none;
+          background: transparent;
+          font-size: 0.95rem;
+          color: #1e293b;
+          font-weight: 500;
+        }
+
+        .daytours-page .dt-search-input::placeholder { color: #94a3b8; }
+
+        .daytours-page .dt-search-clear {
+          background: none;
+          border: none;
+          color: #94a3b8;
+          cursor: pointer;
+          font-size: 1rem;
+          line-height: 1;
+          padding: 0;
+          transition: color 0.15s;
+        }
+        .daytours-page .dt-search-clear:hover { color: #ef4444; }
+
+        .daytours-page .dt-filter-bottom {
           display: flex;
           align-items: center;
           justify-content: space-between;
           flex-wrap: wrap;
-          gap: 15px;
+          gap: 10px;
         }
 
         .daytours-page .dt-filter-count {
@@ -373,26 +436,45 @@ export default function DayTours() {
       {/* Filter Bar */}
       <div className="dt-filter-bar">
         <div className="dt-filter-inner">
-          <div className="dt-filter-count">
-            <strong>{filteredTours.length}</strong> of {tours.length} tours
-            {activeLocation !== 'all' && <span style={{ color: '#f97316', marginLeft: 6 }}>· in {activeLocation}</span>}
+          {/* Search row */}
+          <div className="dt-filter-top">
+            <div className="dt-search-wrap">
+              <span className="dt-search-icon">🔍</span>
+              <input
+                className="dt-search-input"
+                type="text"
+                placeholder="Search tours by title, location, features…"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button className="dt-search-clear" onClick={() => setSearchQuery('')}>✕</button>
+              )}
+            </div>
           </div>
-          <div className="dt-filter-tags">
-            <span
-              className={`dt-filter-tag-all${activeLocation === 'all' ? ' active' : ''}`}
-              onClick={() => setActiveLocation('all')}
-            >
-              All Locations
-            </span>
-            {locations.map((loc, i) => (
+          {/* Location filter + count row */}
+          <div className="dt-filter-bottom">
+            <div className="dt-filter-tags">
               <span
-                key={i}
-                className={`dt-filter-tag${activeLocation === loc ? ' active' : ''}`}
-                onClick={() => setActiveLocation(activeLocation === loc ? 'all' : loc)}
+                className={`dt-filter-tag-all${activeLocation === 'all' ? ' active' : ''}`}
+                onClick={() => setActiveLocation('all')}
               >
-                📍 {loc}
+                All Locations
               </span>
-            ))}
+              {locations.map((loc, i) => (
+                <span
+                  key={i}
+                  className={`dt-filter-tag${activeLocation === loc ? ' active' : ''}`}
+                  onClick={() => setActiveLocation(activeLocation === loc ? 'all' : loc)}
+                >
+                  📍 {loc}
+                </span>
+              ))}
+            </div>
+            <div className="dt-filter-count">
+              <strong>{filteredTours.length}</strong> of {tours.length} tours
+              {activeLocation !== 'all' && <span style={{ color: '#f97316', marginLeft: 6 }}>· in {activeLocation}</span>}
+            </div>
           </div>
         </div>
       </div>
@@ -438,11 +520,11 @@ export default function DayTours() {
           </div>
         ) : (
           <div className="dt-empty">
-            <h3>No Tours in {activeLocation}</h3>
-            <p>Try selecting a different location or browse all tours.</p>
+            <h3>No Tours Found</h3>
+            <p>Try a different search or location filter.</p>
             <span
               style={{ display: 'inline-block', background: 'linear-gradient(to right, #f97316, #fb923c)', color: 'white', padding: '14px 30px', borderRadius: '50px', cursor: 'pointer', fontWeight: 700, boxShadow: '0 8px 20px rgba(249,115,22,0.3)' }}
-              onClick={() => setActiveLocation('all')}
+              onClick={() => { setActiveLocation('all'); setSearchQuery(''); }}
             >
               Show All Tours
             </span>

@@ -7,12 +7,20 @@ export default function Hotels() {
   const hotels = data.hotels || [];
 
   const [activeCategory, setActiveCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const categories = ['all', ...new Set(hotels.map(h => h.category).filter(Boolean))];
 
-  const filteredHotels = activeCategory === 'all'
-    ? hotels
-    : hotels.filter(h => h.category === activeCategory);
+  const filteredHotels = hotels.filter(h => {
+    const catMatch = activeCategory === 'all' || h.category === activeCategory;
+    const q = searchQuery.toLowerCase();
+    const searchMatch = !q ||
+      h.title?.toLowerCase().includes(q) ||
+      h.location?.toLowerCase().includes(q) ||
+      h.category?.toLowerCase().includes(q) ||
+      h.amenities?.some(a => a.toLowerCase().includes(q));
+    return catMatch && searchMatch;
+  });
 
   return (
     <div className="hotels-page">
@@ -87,11 +95,72 @@ export default function Hotels() {
         .hotels-page .ht-categories-inner {
           background: white;
           border-radius: 16px;
-          padding: 18px 30px;
+          padding: 18px 24px;
           box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .hotels-page .ht-search-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .hotels-page .ht-search-wrap {
+          flex: 1;
           display: flex;
           align-items: center;
           gap: 10px;
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 10px;
+          padding: 9px 14px;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .hotels-page .ht-search-wrap:focus-within {
+          border-color: #0284c7;
+          box-shadow: 0 0 0 3px rgba(2,132,199,0.12);
+        }
+
+        .hotels-page .ht-search-icon { font-size: 1rem; color: #94a3b8; flex-shrink: 0; }
+
+        .hotels-page .ht-search-input {
+          flex: 1;
+          border: none;
+          outline: none;
+          background: transparent;
+          font-size: 0.95rem;
+          color: #1e293b;
+          font-weight: 500;
+        }
+        .hotels-page .ht-search-input::placeholder { color: #94a3b8; }
+
+        .hotels-page .ht-search-clear {
+          background: none;
+          border: none;
+          color: #94a3b8;
+          cursor: pointer;
+          font-size: 1rem;
+          padding: 0;
+          transition: color 0.15s;
+        }
+        .hotels-page .ht-search-clear:hover { color: #ef4444; }
+
+        .hotels-page .ht-filter-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .hotels-page .ht-filter-tags {
+          display: flex;
+          align-items: center;
+          gap: 8px;
           flex-wrap: wrap;
         }
 
@@ -348,26 +417,47 @@ export default function Hotels() {
       {/* Category Filter Bar */}
       <div className="ht-categories">
         <div className="ht-categories-inner">
-          <span className="ht-cat-label">Categories:</span>
-          <span
-            className={`ht-cat-all${activeCategory === 'all' ? ' active' : ''}`}
-            onClick={() => setActiveCategory('all')}
-          >
-            All
-          </span>
-          {categories.filter(c => c !== 'all').map((cat, i) => (
-            <span
-              key={i}
-              className={`ht-cat-tag${activeCategory === cat ? ' active' : ''}`}
-              onClick={() => setActiveCategory(activeCategory === cat ? 'all' : cat)}
-            >
-              {cat}
+          {/* Search row */}
+          <div className="ht-search-row">
+            <div className="ht-search-wrap">
+              <span className="ht-search-icon">🔍</span>
+              <input
+                className="ht-search-input"
+                type="text"
+                placeholder="Search hotels by name, location, amenities…"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button className="ht-search-clear" onClick={() => setSearchQuery('')}>✕</button>
+              )}
+            </div>
+          </div>
+          {/* Category filter + count row */}
+          <div className="ht-filter-row">
+            <div className="ht-filter-tags">
+              <span className="ht-cat-label">Categories:</span>
+              <span
+                className={`ht-cat-all${activeCategory === 'all' ? ' active' : ''}`}
+                onClick={() => setActiveCategory('all')}
+              >
+                All
+              </span>
+              {categories.filter(c => c !== 'all').map((cat, i) => (
+                <span
+                  key={i}
+                  className={`ht-cat-tag${activeCategory === cat ? ' active' : ''}`}
+                  onClick={() => setActiveCategory(activeCategory === cat ? 'all' : cat)}
+                >
+                  {cat}
+                </span>
+              ))}
+            </div>
+            <span style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 500 }}>
+              <strong style={{ color: '#1e293b', fontWeight: 800, fontSize: '1.1rem' }}>{filteredHotels.length}</strong>
+              {activeCategory === 'all' ? ' properties' : ` ${activeCategory} properties`}
             </span>
-          ))}
-          <span style={{ marginLeft: 'auto', color: '#64748b', fontSize: '0.9rem', fontWeight: 500 }}>
-            <strong style={{ color: '#1e293b', fontWeight: 800, fontSize: '1.1rem' }}>{filteredHotels.length}</strong>
-            {activeCategory === 'all' ? ' properties' : ` ${activeCategory} properties`}
-          </span>
+          </div>
         </div>
       </div>
 
@@ -404,11 +494,11 @@ export default function Hotels() {
           </div>
         ) : (
           <div className="ht-empty">
-            <h3>No {activeCategory !== 'all' ? activeCategory : ''} Hotels Found</h3>
-            <p>Try selecting a different category or browse all properties.</p>
+            <h3>No Hotels Found</h3>
+            <p>Try a different search term or category filter.</p>
             <span
               style={{ display: 'inline-block', background: 'linear-gradient(to right, #0284c7, #0ea5e9)', color: 'white', padding: '14px 30px', borderRadius: '50px', cursor: 'pointer', fontWeight: 700 }}
-              onClick={() => setActiveCategory('all')}
+              onClick={() => { setActiveCategory('all'); setSearchQuery(''); }}
             >
               Show All Hotels
             </span>

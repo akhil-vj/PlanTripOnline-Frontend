@@ -1,9 +1,23 @@
+import { useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
 export default function TourPackages() {
   const data = useOutletContext();
   const packages = data.tourPackages || [];
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredPackages = searchQuery.trim()
+    ? packages.filter(p => {
+        const q = searchQuery.toLowerCase();
+        return (
+          p.title?.toLowerCase().includes(q) ||
+          p.subtitle?.toLowerCase().includes(q) ||
+          p.duration?.toLowerCase().includes(q) ||
+          p.includes?.some(inc => inc.toLowerCase().includes(q))
+        );
+      })
+    : packages;
 
   return (
     <div className="packages-page">
@@ -420,8 +434,56 @@ export default function TourPackages() {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div style={{ maxWidth: 1280, margin: '-30px auto 0', padding: '0 1.5rem', position: 'relative', zIndex: 3 }}>
+        <div style={{
+          background: 'white',
+          borderRadius: 16,
+          padding: '16px 24px',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+          border: '1.5px solid transparent',
+          transition: 'border-color 0.2s',
+        }}
+          onFocus={e => e.currentTarget.style.borderColor = '#f97316'}
+          onBlur={e => e.currentTarget.style.borderColor = 'transparent'}
+        >
+          <span style={{ fontSize: '1.2rem', color: '#94a3b8', flexShrink: 0 }}>🔍</span>
+          <input
+            type="text"
+            placeholder="Search packages by name, duration, inclusions…"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{
+              flex: 1,
+              border: 'none',
+              outline: 'none',
+              fontSize: '1rem',
+              color: '#1e293b',
+              fontWeight: 500,
+              background: 'transparent',
+            }}
+          />
+          <span style={{ fontSize: '0.85rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+            <strong style={{ color: '#1e293b' }}>{filteredPackages.length}</strong> package{filteredPackages.length !== 1 ? 's' : ''}
+          </span>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{ background: '#f1f5f9', border: 'none', color: '#64748b', cursor: 'pointer', padding: '5px 12px', borderRadius: 8, fontSize: '0.82rem', fontWeight: 600, transition: 'all 0.2s' }}
+              onMouseOver={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.color = '#ef4444'; }}
+              onMouseOut={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#64748b'; }}
+            >
+              ✕ Clear
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="pkg-grid-section">
-        {packages.length > 0 ? (
+        {filteredPackages.length > 0 ? (
           <>
             {/* Featured — first package */}
             <div className="pkg-featured">
@@ -430,28 +492,28 @@ export default function TourPackages() {
                 {packages[0].badge && <span className="pkg-featured-badge">{packages[0].badge}</span>}
               </div>
               <div className="pkg-featured-body">
-                <span className="pkg-featured-duration">⏱ {packages[0].duration}</span>
-                <h2>{packages[0].title}</h2>
-                <p className="pkg-featured-subtitle">{packages[0].subtitle}</p>
+                <span className="pkg-featured-duration">⏱ {filteredPackages[0].duration}</span>
+                <h2>{filteredPackages[0].title}</h2>
+                <p className="pkg-featured-subtitle">{filteredPackages[0].subtitle}</p>
                 <div className="pkg-includes">
-                  {packages[0].includes?.map((inc, i) => (
+                  {filteredPackages[0].includes?.map((inc, i) => (
                     <span key={i} className="pkg-include-tag">{inc}</span>
                   ))}
                 </div>
                 <div className="pkg-featured-footer">
                   <div>
                     <div className="pkg-price-label">Starting from</div>
-                    <div className="pkg-price">{packages[0].price} <small>/person</small></div>
+                    <div className="pkg-price">{filteredPackages[0].price} <small>/person</small></div>
                   </div>
-                  <Link to="/book-trip" state={{ destination: packages[0].title, country: data.name, image: packages[0].image, price: packages[0].price }} className="pkg-cta-btn">Book This Package ➔</Link>
+                  <Link to="/book-trip" state={{ destination: filteredPackages[0].title, country: data.name, image: filteredPackages[0].image, price: filteredPackages[0].price }} className="pkg-cta-btn">Book This Package ➔</Link>
                 </div>
               </div>
             </div>
 
             {/* Rest of packages */}
-            {packages.length > 1 && (
+            {filteredPackages.length > 1 && (
               <div className="pkg-grid">
-                {packages.slice(1).map(pkg => (
+                {filteredPackages.slice(1).map(pkg => (
                   <div key={pkg.id} className="pkg-card">
                     <div className="pkg-card-img">
                       <img src={pkg.image} alt={pkg.title} />
@@ -478,9 +540,19 @@ export default function TourPackages() {
           </>
         ) : (
           <div className="pkg-empty">
-            <h3>Tour Packages Coming Soon!</h3>
-            <p>We are crafting the ultimate multi-day packages for {data.name}.</p>
-            <Link to="/enquiry">Enquire Custom Package</Link>
+            {searchQuery ? (
+              <>
+                <h3>No packages matching "{searchQuery}"</h3>
+                <p>Try a different keyword or browse all packages.</p>
+                <button onClick={() => setSearchQuery('')} style={{ display: 'inline-block', background: 'linear-gradient(to right,#f97316,#fb923c)', color: 'white', padding: '14px 30px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 700 }}>Clear Search</button>
+              </>
+            ) : (
+              <>
+                <h3>Tour Packages Coming Soon!</h3>
+                <p>We are crafting the ultimate multi-day packages for {data.name}.</p>
+                <Link to="/enquiry">Enquire Custom Package</Link>
+              </>
+            )}
           </div>
         )}
       </div>
