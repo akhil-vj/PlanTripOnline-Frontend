@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
@@ -5,12 +6,18 @@ export default function Hotels() {
   const data = useOutletContext();
   const hotels = data.hotels || [];
 
+  const [activeCategory, setActiveCategory] = useState('all');
+
   const categories = ['all', ...new Set(hotels.map(h => h.category).filter(Boolean))];
+
+  const filteredHotels = activeCategory === 'all'
+    ? hotels
+    : hotels.filter(h => h.category === activeCategory);
 
   return (
     <div className="hotels-page">
       <Helmet>
-        <title>{data.name} Hotels & Resorts - PlantripOnline</title>
+        <title>{data.name} Hotels &amp; Resorts - PlantripOnline</title>
       </Helmet>
 
       <style>{`
@@ -103,7 +110,46 @@ export default function Hotels() {
           font-size: 0.85rem;
           font-weight: 600;
           text-transform: capitalize;
-          cursor: default;
+          cursor: pointer;
+          border: 1.5px solid #e2e8f0;
+          transition: all 0.2s ease;
+        }
+
+        .hotels-page .ht-cat-tag:hover {
+          background: #f0f9ff;
+          border-color: #0284c7;
+          color: #0369a1;
+          transform: translateY(-1px);
+        }
+
+        .hotels-page .ht-cat-tag.active {
+          background: linear-gradient(135deg, #0284c7, #0ea5e9);
+          color: white;
+          border-color: #0284c7;
+          box-shadow: 0 4px 12px rgba(2,132,199,0.3);
+        }
+
+        .hotels-page .ht-cat-all {
+          background: #f1f5f9;
+          color: #475569;
+          padding: 6px 16px;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          border: 1.5px solid #e2e8f0;
+          transition: all 0.2s ease;
+        }
+
+        .hotels-page .ht-cat-all:hover {
+          background: #f1f5f9;
+          color: #1e293b;
+        }
+
+        .hotels-page .ht-cat-all.active {
+          background: #1e293b;
+          color: white;
+          border-color: #1e293b;
         }
 
         .hotels-page .ht-grid-section {
@@ -294,29 +340,42 @@ export default function Hotels() {
       <div className="ht-hero">
         <div className="ht-hero-bg" style={{ backgroundImage: `url(${data.heroImage})` }}></div>
         <div className="ht-hero-content">
-          <h1><span>{data.name}</span> Hotels & Resorts</h1>
+          <h1><span>{data.name}</span> Hotels &amp; Resorts</h1>
           <p>From 5-star luxury resorts to charming boutique stays — find the perfect accommodation for your trip.</p>
         </div>
       </div>
 
-      {/* Category Bar */}
+      {/* Category Filter Bar */}
       <div className="ht-categories">
         <div className="ht-categories-inner">
           <span className="ht-cat-label">Categories:</span>
+          <span
+            className={`ht-cat-all${activeCategory === 'all' ? ' active' : ''}`}
+            onClick={() => setActiveCategory('all')}
+          >
+            All
+          </span>
           {categories.filter(c => c !== 'all').map((cat, i) => (
-            <span key={i} className="ht-cat-tag">{cat}</span>
+            <span
+              key={i}
+              className={`ht-cat-tag${activeCategory === cat ? ' active' : ''}`}
+              onClick={() => setActiveCategory(activeCategory === cat ? 'all' : cat)}
+            >
+              {cat}
+            </span>
           ))}
           <span style={{ marginLeft: 'auto', color: '#64748b', fontSize: '0.9rem', fontWeight: 500 }}>
-            <strong style={{ color: '#1e293b', fontWeight: 800, fontSize: '1.1rem' }}>{hotels.length}</strong> properties
+            <strong style={{ color: '#1e293b', fontWeight: 800, fontSize: '1.1rem' }}>{filteredHotels.length}</strong>
+            {activeCategory === 'all' ? ' properties' : ` ${activeCategory} properties`}
           </span>
         </div>
       </div>
 
       {/* Grid */}
       <div className="ht-grid-section">
-        {hotels.length > 0 ? (
+        {filteredHotels.length > 0 ? (
           <div className="ht-grid">
-            {hotels.map(hotel => (
+            {filteredHotels.map(hotel => (
               <div key={hotel.id} className="ht-card">
                 <div className="ht-card-img">
                   <img src={hotel.image} alt={hotel.title} />
@@ -345,9 +404,14 @@ export default function Hotels() {
           </div>
         ) : (
           <div className="ht-empty">
-            <h3>Hotels Coming Soon!</h3>
-            <p>We are curating the best stays in {data.name}.</p>
-            <Link to="/enquiry">Enquire Accommodation</Link>
+            <h3>No {activeCategory !== 'all' ? activeCategory : ''} Hotels Found</h3>
+            <p>Try selecting a different category or browse all properties.</p>
+            <span
+              style={{ display: 'inline-block', background: 'linear-gradient(to right, #0284c7, #0ea5e9)', color: 'white', padding: '14px 30px', borderRadius: '50px', cursor: 'pointer', fontWeight: 700 }}
+              onClick={() => setActiveCategory('all')}
+            >
+              Show All Hotels
+            </span>
           </div>
         )}
       </div>

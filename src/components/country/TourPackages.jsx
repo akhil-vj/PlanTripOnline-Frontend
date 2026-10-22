@@ -443,7 +443,7 @@ export default function TourPackages() {
                     <div className="pkg-price-label">Starting from</div>
                     <div className="pkg-price">{packages[0].price} <small>/person</small></div>
                   </div>
-                  <Link to="/enquiry" className="pkg-cta-btn">Book This Package ➔</Link>
+                  <Link to="/book-trip" state={{ destination: packages[0].title, country: data.name, image: packages[0].image, price: packages[0].price }} className="pkg-cta-btn">Book This Package ➔</Link>
                 </div>
               </div>
             </div>
@@ -468,7 +468,7 @@ export default function TourPackages() {
                       </div>
                       <div className="pkg-card-footer">
                         <div className="pkg-card-price">{pkg.price}</div>
-                        <Link to="/enquiry" className="pkg-card-btn">View Details</Link>
+                        <Link to="/book-trip" state={{ destination: pkg.title, country: data.name, image: pkg.image, price: pkg.price }} className="pkg-card-btn">Book Now</Link>
                       </div>
                     </div>
                   </div>

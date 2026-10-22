@@ -1,9 +1,18 @@
+import { useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
 export default function DayTours() {
   const data = useOutletContext();
   const tours = data.dayTours || [];
+
+  const [activeLocation, setActiveLocation] = useState('all');
+
+  const locations = [...new Set(tours.map(t => t.location).filter(Boolean))];
+
+  const filteredTours = activeLocation === 'all'
+    ? tours
+    : tours.filter(t => t.location === activeLocation);
 
   return (
     <div className="daytours-page">
@@ -103,17 +112,58 @@ export default function DayTours() {
           display: flex;
           gap: 8px;
           flex-wrap: wrap;
+          align-items: center;
         }
 
         .daytours-page .dt-filter-tag {
           background: #f8fafc;
           color: #64748b;
-          border: 1px solid #e2e8f0;
+          border: 1.5px solid #e2e8f0;
           padding: 6px 14px;
           border-radius: 20px;
           font-size: 0.85rem;
           font-weight: 500;
-          cursor: default;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .daytours-page .dt-filter-tag:hover {
+          background: #fff7ed;
+          border-color: #fb923c;
+          color: #ea580c;
+          transform: translateY(-1px);
+        }
+
+        .daytours-page .dt-filter-tag.active {
+          background: linear-gradient(135deg, #f97316, #fb923c);
+          color: white;
+          border-color: #f97316;
+          box-shadow: 0 4px 12px rgba(249,115,22,0.3);
+          font-weight: 700;
+        }
+
+        .daytours-page .dt-filter-tag-all {
+          background: #f8fafc;
+          color: #64748b;
+          border: 1.5px solid #e2e8f0;
+          padding: 6px 14px;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .daytours-page .dt-filter-tag-all:hover {
+          background: #f1f5f9;
+          color: #1e293b;
+        }
+
+        .daytours-page .dt-filter-tag-all.active {
+          background: #1e293b;
+          color: white;
+          border-color: #1e293b;
+          font-weight: 700;
         }
 
         .daytours-page .dt-grid-section {
@@ -208,6 +258,13 @@ export default function DayTours() {
           font-size: 0.85rem;
           font-weight: 500;
           margin-bottom: 8px;
+          cursor: pointer;
+          display: inline-block;
+          transition: color 0.2s;
+        }
+
+        .daytours-page .dt-card-location:hover {
+          color: #f97316;
         }
 
         .daytours-page .dt-card-body h3 {
@@ -317,11 +374,24 @@ export default function DayTours() {
       <div className="dt-filter-bar">
         <div className="dt-filter-inner">
           <div className="dt-filter-count">
-            <strong>{tours.length}</strong> tours available
+            <strong>{filteredTours.length}</strong> of {tours.length} tours
+            {activeLocation !== 'all' && <span style={{ color: '#f97316', marginLeft: 6 }}>· in {activeLocation}</span>}
           </div>
           <div className="dt-filter-tags">
-            {[...new Set(tours.map(t => t.location))].map((loc, i) => (
-              <span key={i} className="dt-filter-tag">📍 {loc}</span>
+            <span
+              className={`dt-filter-tag-all${activeLocation === 'all' ? ' active' : ''}`}
+              onClick={() => setActiveLocation('all')}
+            >
+              All Locations
+            </span>
+            {locations.map((loc, i) => (
+              <span
+                key={i}
+                className={`dt-filter-tag${activeLocation === loc ? ' active' : ''}`}
+                onClick={() => setActiveLocation(activeLocation === loc ? 'all' : loc)}
+              >
+                📍 {loc}
+              </span>
             ))}
           </div>
         </div>
@@ -329,9 +399,9 @@ export default function DayTours() {
 
       {/* Grid */}
       <div className="dt-grid-section">
-        {tours.length > 0 ? (
+        {filteredTours.length > 0 ? (
           <div className="dt-grid">
-            {tours.map(tour => (
+            {filteredTours.map(tour => (
               <div key={tour.id} className="dt-card">
                 <div className="dt-card-img">
                   <img src={tour.image} alt={tour.title} />
@@ -340,7 +410,13 @@ export default function DayTours() {
                   {tour.rating && <span className="dt-card-rating">★ {tour.rating} ({tour.reviews})</span>}
                 </div>
                 <div className="dt-card-body">
-                  <div className="dt-card-location">📍 {tour.location}</div>
+                  <div
+                    className="dt-card-location"
+                    onClick={() => setActiveLocation(tour.location)}
+                    title={`Filter by ${tour.location}`}
+                  >
+                    📍 {tour.location}
+                  </div>
                   <h3>{tour.title}</h3>
                   <p className="dt-card-desc">{tour.description}</p>
                   <div className="dt-card-features">
@@ -348,7 +424,13 @@ export default function DayTours() {
                   </div>
                   <div className="dt-card-footer">
                     <div className="dt-card-price">{tour.price} <small>/person</small></div>
-                    <Link to="/enquiry" className="dt-book-btn">Book Now</Link>
+                    <Link
+                      to="/book-trip"
+                      state={{ destination: tour.title, country: data.name, image: tour.image, price: tour.price }}
+                      className="dt-book-btn"
+                    >
+                      Book Now
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -356,9 +438,14 @@ export default function DayTours() {
           </div>
         ) : (
           <div className="dt-empty">
-            <h3>Day Tours Coming Soon!</h3>
-            <p>We are curating the best local experiences in {data.name}.</p>
-            <Link to="/enquiry">Enquire Custom Tour</Link>
+            <h3>No Tours in {activeLocation}</h3>
+            <p>Try selecting a different location or browse all tours.</p>
+            <span
+              style={{ display: 'inline-block', background: 'linear-gradient(to right, #f97316, #fb923c)', color: 'white', padding: '14px 30px', borderRadius: '50px', cursor: 'pointer', fontWeight: 700, boxShadow: '0 8px 20px rgba(249,115,22,0.3)' }}
+              onClick={() => setActiveLocation('all')}
+            >
+              Show All Tours
+            </span>
           </div>
         )}
       </div>
