@@ -26,6 +26,7 @@ import DestinationDetail from './components/country/DestinationDetail'
 import Transfers from './components/country/Transfers'
 import CustomizedPackages from './components/country/CustomizedPackages'
 import TourDetail from './components/country/TourDetail'
+import TransferDetail from './components/country/TransferDetail'
 import PackageDetail from './components/country/PackageDetail'
 import ScrollToTop from './components/ScrollToTop'
 import PlanTripPage from './pages/PlanTripPage'
@@ -75,6 +76,7 @@ export default function App() {
             <Route path="destinations" element={<Destinations />} />
             <Route path="destinations/:destSlug" element={<DestinationDetail />} />
             <Route path="transfers" element={<Transfers />} />
+            <Route path="transfers/:transferSlug" element={<TransferDetail />} />
             <Route path="customized-packages" element={<CustomizedPackages />} />
             <Route path="tours/:tourSlug" element={<TourDetail />} />
             <Route path="package/:packageSlug" element={<PackageDetail />} />

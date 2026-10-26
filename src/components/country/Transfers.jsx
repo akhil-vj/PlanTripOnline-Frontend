@@ -445,7 +445,7 @@ export default function Transfers() {
                   </div>
                   <div className="tf-card-footer">
                     <div className="tf-card-price">{transfer.price}</div>
-                    <Link to="/enquiry" className="tf-book-btn">Book Transfer</Link>
+                    <Link to={`/${data.slug}/transfers/${transfer.id}`} state={{ transfer, country: data }} className="tf-book-btn">Book Transfer</Link>
                   </div>
                 </div>
               </div>
