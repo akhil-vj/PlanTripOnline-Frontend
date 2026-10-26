@@ -505,7 +505,7 @@ export default function TourPackages() {
                     <div className="pkg-price-label">Starting from</div>
                     <div className="pkg-price">{filteredPackages[0].price} <small>/person</small></div>
                   </div>
-                  <Link to="/book-trip" state={{ destination: filteredPackages[0].title, country: data.name, image: filteredPackages[0].image, price: filteredPackages[0].price }} className="pkg-cta-btn">Book This Package ➔</Link>
+                  <Link to={`/${data.slug}/package/${filteredPackages[0].id}`} state={{ pkg: filteredPackages[0], country: data }} className="pkg-cta-btn">Book This Package ➔</Link>
                 </div>
               </div>
             </div>
@@ -530,7 +530,7 @@ export default function TourPackages() {
                       </div>
                       <div className="pkg-card-footer">
                         <div className="pkg-card-price">{pkg.price}</div>
-                        <Link to="/book-trip" state={{ destination: pkg.title, country: data.name, image: pkg.image, price: pkg.price }} className="pkg-card-btn">Book Now</Link>
+                        <Link to={`/${data.slug}/package/${pkg.id}`} state={{ pkg, country: data }} className="pkg-card-btn">Book Now</Link>
                       </div>
                     </div>
                   </div>
