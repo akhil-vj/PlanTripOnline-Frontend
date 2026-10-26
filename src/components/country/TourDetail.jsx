@@ -343,7 +343,11 @@ export default function TourDetail() {
         <div className="td-hero-overlay" />
 
         {/* Back button */}
-        <button className="td-back-btn" onClick={() => navigate(-1)}>
+        <button
+          type="button"
+          className="td-back-btn"
+          onClick={() => window.history.length > 1 ? navigate(-1) : navigate(`/${data.slug}/day-tours`)}
+        >
           <span className="td-back-arrow">←</span> Back
         </button>
 
