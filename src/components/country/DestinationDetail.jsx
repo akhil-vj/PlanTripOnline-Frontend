@@ -683,8 +683,8 @@ export default function DestinationDetail() {
                   <div className="dd-tour-footer">
                     <div className="dd-tour-price">{tour.price} <small>/person</small></div>
                     <Link
-                      to="/book-trip"
-                      state={{ destination: tour.title, country: data.name, image: tour.image, price: tour.price }}
+                      to={`/${data.slug}/tours/${tour.id}`}
+                      state={{ tour, country: data }}
                       className="dd-book-btn"
                     >
                       Book Now

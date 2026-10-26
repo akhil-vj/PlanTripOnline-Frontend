@@ -507,8 +507,8 @@ export default function DayTours() {
                   <div className="dt-card-footer">
                     <div className="dt-card-price">{tour.price} <small>/person</small></div>
                     <Link
-                      to="/book-trip"
-                      state={{ destination: tour.title, country: data.name, image: tour.image, price: tour.price }}
+                      to={`/${data.slug}/tours/${tour.id}`}
+                      state={{ tour, country: data }}
                       className="dt-book-btn"
                     >
                       Book Now
