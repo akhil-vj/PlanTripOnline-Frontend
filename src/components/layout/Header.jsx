@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { brandInfo, contactInfo, featuredCountries } from '../../data/global';
 import '../../styles/header.css';
@@ -19,6 +19,8 @@ const NAV_ITEMS = [
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState(null); // which nav item is click-locked open
+  const navRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -64,14 +66,25 @@ export default function Header() {
   const [isProfileClicked, setIsProfileClicked] = useState(false);
   const profileMenuRef = useRef(null);
 
+  // Close both profile dropdown and nav dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setIsProfileClicked(false);
       }
+      if (navRef.current && !navRef.current.contains(event.target)) {
+        setOpenMenu(null);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close locked menu on route change
+  useEffect(() => { setOpenMenu(null); }, [location.pathname]);
+
+  const handleNavClick = useCallback((path) => {
+    setOpenMenu(prev => prev === path ? null : path);
   }, []);
 
   const toggleMobileMenu = () => {
@@ -97,37 +110,60 @@ export default function Header() {
             </Link>
           )}
 
-          <nav className="nav-desktop">
-            {NAV_ITEMS.map(item => (
-              <div className="nav-item" key={item.path}>
-                {currentCountrySlug ? (
-                  /* COUNTRY MODE: Direct link, no dropdown */
-                  <Link
-                    to={`/${currentCountrySlug}/${item.path}`}
-                    className={`nav-button nav-link ${
-                      location.pathname === `/${currentCountrySlug}/${item.path}` ? 'nav-active' : ''
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                  </Link>
-                ) : (
-                  /* HOMEPAGE MODE: Show dropdown with all countries */
-                  <>
-                    <button className="nav-button">
+          <nav className="nav-desktop" ref={navRef}>
+            {NAV_ITEMS.map(item => {
+              const isLocked = openMenu === item.path;
+              return (
+                <div
+                  className={`nav-item${isLocked ? ' nav-item--open' : ''}`}
+                  key={item.path}
+                >
+                  {currentCountrySlug ? (
+                    /* COUNTRY MODE: Direct link, no dropdown */
+                    <Link
+                      to={`/${currentCountrySlug}/${item.path}`}
+                      className={`nav-button nav-link ${
+                        location.pathname === `/${currentCountrySlug}/${item.path}` ? 'nav-active' : ''
+                      }`}
+                    >
                       <span>{item.label}</span>
-                      <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </button>
-                    <div className="dropdown">
-                      {featuredCountries.map(country => (
-                        <Link key={country.slug} to={`/${country.slug}/${item.path}`} className="dropdown-item">
-                          {country.flag} {country.name} {item.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
+                    </Link>
+                  ) : (
+                    /* HOMEPAGE MODE: hover + click-lock dropdown */
+                    <>
+                      <button
+                        className={`nav-button${isLocked ? ' nav-button--active' : ''}`}
+                        onClick={() => handleNavClick(item.path)}
+                        aria-expanded={isLocked}
+                        aria-haspopup="true"
+                      >
+                        <span>{item.label}</span>
+                        <svg
+                          className={`chevron${isLocked ? ' chevron--up' : ''}`}
+                          viewBox="0 0 24 24"
+                        >
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      </button>
+                      <div className={`dropdown${isLocked ? ' dropdown--locked' : ''}`}>
+                        <div className="dropdown-items">
+                          {featuredCountries.map(country => (
+                            <Link
+                              key={country.slug}
+                              to={`/${country.slug}/${item.path}`}
+                              className="dropdown-item"
+                              onClick={() => setOpenMenu(null)}
+                            >
+                              {country.flag} {country.name} {item.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </nav>
 
           <div className="header-right">
