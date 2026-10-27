@@ -1,6 +1,38 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useOutletContext, useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+
+/* ── Child Age Popup ───────────────────────────────── */
+function ChildAgePopup({ onAdd, onClose }) {
+  const [age, setAge] = useState('');
+  const ref = useRef(null);
+  useEffect(() => { ref.current?.focus(); }, []);
+  const valid = age !== '' && !isNaN(+age) && +age >= 0 && +age <= 17;
+  return (
+    <div style={{ position:'fixed',inset:0,zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(15,23,42,.38)',backdropFilter:'blur(5px)' }}
+      onMouseDown={onClose}>
+      <style>{`@keyframes pdKidPop{from{opacity:0;transform:scale(.85) translateY(12px)}to{opacity:1;transform:none}}`}</style>
+      <div style={{ background:'#fff',borderRadius:24,padding:'32px 28px 28px',width:310,boxShadow:'0 24px 72px rgba(0,0,0,.22)',animation:'pdKidPop .22s cubic-bezier(.34,1.56,.64,1)',textAlign:'center' }}
+        onMouseDown={e => e.stopPropagation()}>
+        <div style={{ fontSize:'2.2rem',marginBottom:8 }}>👶</div>
+        <h3 style={{ fontSize:'1.15rem',fontWeight:800,color:'#0f172a',margin:'0 0 4px' }}>Child's Age</h3>
+        <p style={{ fontSize:'.82rem',color:'#64748b',margin:'0 0 18px' }}>Enter age in years (0 – 17)</p>
+        <input ref={ref} type="number" min="0" max="17" value={age} onChange={e => setAge(e.target.value)}
+          onKeyDown={e => e.key==='Enter'&&valid&&onAdd(+age)} placeholder="e.g. 7"
+          style={{ width:'100%',padding:'14px',border:'2px solid #e2e8f0',borderRadius:14,fontSize:'1.3rem',fontWeight:800,color:'#0f172a',textAlign:'center',outline:'none',fontFamily:'inherit',boxSizing:'border-box' }}
+          onFocus={e=>{e.target.style.borderColor='#f97316';e.target.style.boxShadow='0 0 0 3px rgba(249,115,22,.12)';}}
+          onBlur={e=>{e.target.style.borderColor='#e2e8f0';e.target.style.boxShadow='none';}}/>
+        <div style={{ display:'flex',gap:10,marginTop:18 }}>
+          <button type="button" onClick={onClose} style={{ flex:1,padding:'12px',border:'1.5px solid #e2e8f0',background:'#fff',borderRadius:12,fontSize:'.88rem',fontWeight:600,color:'#64748b',cursor:'pointer',fontFamily:'inherit' }}>Cancel</button>
+          <button type="button" onClick={()=>onAdd(+age)} disabled={!valid}
+            style={{ flex:1,padding:'12px',background:'linear-gradient(135deg,#f97316,#fb923c)',border:'none',borderRadius:12,fontSize:'.88rem',fontWeight:700,color:'#fff',cursor:'pointer',fontFamily:'inherit',opacity:valid?1:.45 }}>
+            Add Child ✓
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const NATIONALITIES = ['India','USA','UK','Australia','Singapore','Malaysia','Thailand','UAE','China','Japan','Germany','France','Other'];
 const COUNTRY_CODES = ['+91','+1','+44','+61','+65','+60','+66','+971','+81','+49'];
@@ -53,7 +85,8 @@ export default function PackageDetail() {
   const [lastName,    setLastName]    = useState('');
   const [nationality, setNation]      = useState('India');
   const [adults,      setAdults]      = useState(2);
-  const [children,    setChildren]    = useState(0);
+  const [kids,        setKids]        = useState([]);  // [{age}]
+  const [showKidPop,  setShowKidPop]  = useState(false);
   const [arrDate,     setArrDate]     = useState('');
   const [depDate,     setDepDate]     = useState('');
   const [email,       setEmail]       = useState('');
@@ -72,7 +105,7 @@ export default function PackageDetail() {
   const [submitted,   setSubmitted]   = useState(false);
 
   const adultTotal = pkg ? pkg.basePrice * adults : 0;
-  const childTotal = pkg ? (pkg.basePrice * 0.7) * children : 0;
+  const childTotal = pkg ? (pkg.basePrice * 0.7) * kids.length : 0;
   const total      = adultTotal + childTotal;
 
   function validate() {
@@ -432,6 +465,8 @@ export default function PackageDetail() {
 
                 {/* Pax + Arrival Date */}
                 <div className="pd-form-row">
+{showKidPop && <ChildAgePopup onAdd={a => { setKids(k => [...k, {age:a}]); setShowKidPop(false); }} onClose={() => setShowKidPop(false)} />}
+
                   <div className="pd-pax-row" style={{ gap:10 }}>
                     <div className="pd-pax-box">
                       <span className="pd-pax-label">Adult</span>
@@ -441,13 +476,24 @@ export default function PackageDetail() {
                         <button type="button" className="pd-pax-btn" onClick={() => setAdults(a => a + 1)}>+</button>
                       </div>
                     </div>
-                    <div className="pd-pax-box">
-                      <span className="pd-pax-label">Child</span>
-                      <div className="pd-pax-ctrl">
-                        <button type="button" className="pd-pax-btn" onClick={() => setChildren(c => Math.max(0, c - 1))}>−</button>
-                        <span className="pd-pax-num">{children}</span>
-                        <button type="button" className="pd-pax-btn" onClick={() => setChildren(c => c + 1)}>+</button>
+                    <div className="pd-pax-box" style={{ display:'flex',flexDirection:'column',gap:8 }}>
+                      <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center' }}>
+                        <span className="pd-pax-label">Children</span>
+                        <button type="button" className="pd-pax-btn" style={{ border:'2px solid #f97316',color:'#f97316' }}
+                          onClick={() => setShowKidPop(true)} title="Add child">+</button>
                       </div>
+                      {kids.length === 0
+                        ? <span style={{ fontSize:'.72rem',color:'#94a3b8',fontStyle:'italic' }}>No children added</span>
+                        : <div style={{ display:'flex',flexWrap:'wrap',gap:5 }}>
+                            {kids.map((k,i) => (
+                              <span key={i} style={{ display:'inline-flex',alignItems:'center',gap:4,background:'linear-gradient(135deg,#fff7ed,#ffedd5)',border:'1.5px solid #fed7aa',borderRadius:20,padding:'3px 8px 3px 10px',fontSize:'.72rem',fontWeight:700,color:'#c2410c' }}>
+                                👧 {k.age}yr
+                                <button type="button" onClick={() => setKids(p => p.filter((_,j)=>j!==i))}
+                                  style={{ background:'none',border:'none',cursor:'pointer',color:'#f97316',fontSize:'.85rem',lineHeight:1,padding:0 }}>×</button>
+                              </span>
+                            ))}
+                          </div>
+                      }
                     </div>
                   </div>
                   <div className={`pd-field${errors.arrDate ? ' error' : ''}`}>
@@ -554,7 +600,7 @@ export default function PackageDetail() {
                 {/* Price summary */}
                 <div className="pd-price-summary">
                   <div className="pd-price-row"><span>Adult × {adults}</span><span>${adultTotal}</span></div>
-                  {children > 0 && <div className="pd-price-row"><span>Child × {children}</span><span>${childTotal.toFixed(0)}</span></div>}
+                  {kids.map((k, i) => <div className="pd-price-row" key={i}><span>Child ({k.age} yr)</span><span>${(pkg.basePrice * 0.7).toFixed(0)}</span></div>)}
                   <div className="pd-price-row total"><span>Total</span><span style={{ color:'#f97316' }}>${total} USD</span></div>
                 </div>
 

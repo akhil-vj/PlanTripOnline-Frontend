@@ -1,6 +1,38 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+
+/* ── Child Age Popup ───────────────────────── */
+function ChildAgePopup({ onAdd, onClose }) {
+  const [age, setAge] = useState('');
+  const ref = useRef(null);
+  useEffect(() => { ref.current?.focus(); }, []);
+  const valid = age !== '' && !isNaN(+age) && +age >= 0 && +age <= 17;
+  return (
+    <div style={{ position:'fixed',inset:0,zIndex:2000,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(15,23,42,.38)',backdropFilter:'blur(5px)' }}
+      onMouseDown={onClose}>
+      <style>{`@keyframes bpKidPop{from{opacity:0;transform:scale(.85) translateY(12px)}to{opacity:1;transform:none}}`}</style>
+      <div style={{ background:'#fff',borderRadius:24,padding:'32px 28px 28px',width:310,boxShadow:'0 24px 72px rgba(0,0,0,.22)',animation:'bpKidPop .22s cubic-bezier(.34,1.56,.64,1)',textAlign:'center' }}
+        onMouseDown={e => e.stopPropagation()}>
+        <div style={{ fontSize:'2.2rem',marginBottom:8 }}>👶</div>
+        <h3 style={{ fontSize:'1.15rem',fontWeight:800,color:'#0f172a',margin:'0 0 4px' }}>Child's Age</h3>
+        <p style={{ fontSize:'.82rem',color:'#64748b',margin:'0 0 18px' }}>Enter age in years (0 – 17)</p>
+        <input ref={ref} type="number" min="0" max="17" value={age} onChange={e => setAge(e.target.value)}
+          onKeyDown={e => e.key==='Enter'&&valid&&onAdd(+age)} placeholder="e.g. 7"
+          style={{ width:'100%',padding:'14px',border:'2px solid #e2e8f0',borderRadius:14,fontSize:'1.3rem',fontWeight:800,color:'#0f172a',textAlign:'center',outline:'none',fontFamily:'inherit',boxSizing:'border-box' }}
+          onFocus={e=>{e.target.style.borderColor='#2563eb';e.target.style.boxShadow='0 0 0 3px rgba(37,99,235,.12)';}}
+          onBlur={e=>{e.target.style.borderColor='#e2e8f0';e.target.style.boxShadow='none';}}/>
+        <div style={{ display:'flex',gap:10,marginTop:18 }}>
+          <button type="button" onClick={onClose} style={{ flex:1,padding:'12px',border:'1.5px solid #e2e8f0',background:'#fff',borderRadius:12,fontSize:'.88rem',fontWeight:600,color:'#64748b',cursor:'pointer' }}>Cancel</button>
+          <button type="button" onClick={()=>onAdd(+age)} disabled={!valid}
+            style={{ flex:1,padding:'12px',background:'linear-gradient(135deg,#2563eb,#3b82f6)',border:'none',borderRadius:12,fontSize:'.88rem',fontWeight:700,color:'#fff',cursor:'pointer',opacity:valid?1:.45 }}>
+            Add Child ✓
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function BookingPage() {
   const location = useLocation();
@@ -28,6 +60,8 @@ export default function BookingPage() {
   });
 
   const [paymentMethod, setPaymentMethod] = useState('online');
+  const [kids, setKids] = useState([]);        // [{age}] — replaces form.children
+  const [showKidPop, setShowKidPop] = useState(false);
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoError, setPromoError] = useState('');
@@ -49,13 +83,13 @@ export default function BookingPage() {
 
   const calculations = useMemo(() => {
     const adultCount = parseInt(form.adults, 10) || 0;
-    const childCount = parseInt(form.children, 10) || 0;
+    const childCount = kids.length;
     const subtotal = (adultCount * baseRatePerAdult) + (childCount * baseRatePerChild);
     const discount = promoApplied ? promoDiscount : 0;
     const taxes = Math.round((subtotal - discount) * 0.05); // 5% service & tax
     const total = Math.max(0, subtotal - discount + taxes);
     return { adultCount, childCount, subtotal, discount, taxes, total };
-  }, [form.adults, form.children, promoApplied, promoDiscount]);
+  }, [form.adults, kids, promoApplied, promoDiscount]);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -531,7 +565,7 @@ export default function BookingPage() {
                       required
                       value={form.firstName}
                       onChange={handleChange}
-                      placeholder="e.g. Rahul"
+                      placeholder="First Name"
                       style={inputStyle}
                       onFocus={e => { e.target.style.borderColor = '#2563eb'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.12)'; }}
                       onBlur={e => { e.target.style.borderColor = '#cbd5e1'; e.target.style.boxShadow = 'none'; }}
@@ -544,7 +578,7 @@ export default function BookingPage() {
                       required
                       value={form.lastName}
                       onChange={handleChange}
-                      placeholder="e.g. Sharma"
+                      placeholder="Last Name"
                       style={inputStyle}
                       onFocus={e => { e.target.style.borderColor = '#2563eb'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.12)'; }}
                       onBlur={e => { e.target.style.borderColor = '#cbd5e1'; e.target.style.boxShadow = 'none'; }}
@@ -703,25 +737,27 @@ export default function BookingPage() {
                   </div>
 
                   <div style={{ background: '#f8fafc', padding: '16px 18px', borderRadius: 14, border: '1px solid #e2e8f0' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    {showKidPop && <ChildAgePopup onAdd={a => { setKids(k => [...k, {age:a}]); setShowKidPop(false); }} onClose={() => setShowKidPop(false)} />}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: kids.length > 0 ? 10 : 0 }}>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#0f172a' }}>Children</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Age 3–11 (${baseRatePerChild}/person)</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Age 0–17 (${baseRatePerChild}/person)</div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <button
-                          type="button"
-                          onClick={() => setForm(prev => ({ ...prev, children: String(Math.max(0, (parseInt(prev.children, 10) || 0) - 1)) }))}
-                          style={counterBtnStyle}
-                        >−</button>
-                        <span style={{ fontSize: '1.1rem', fontWeight: 800, minWidth: 24, textAlign: 'center', color: '#0f172a' }}>{form.children}</span>
-                        <button
-                          type="button"
-                          onClick={() => setForm(prev => ({ ...prev, children: String(Math.min(10, (parseInt(prev.children, 10) || 0) + 1)) }))}
-                          style={counterBtnStyle}
-                        >+</button>
-                      </div>
+                      <button type="button" onClick={() => setShowKidPop(true)}
+                        style={{ ...counterBtnStyle, border: '2px solid #2563eb', color: '#2563eb', width: 34, height: 34, fontSize: '1.3rem' }}>+</button>
                     </div>
+                    {kids.length === 0
+                      ? <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>No children added — click + to add</div>
+                      : <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                          {kids.map((k, i) => (
+                            <span key={i} style={{ display:'inline-flex', alignItems:'center', gap:5, background:'#eff6ff', border:'1.5px solid #bfdbfe', borderRadius:20, padding:'4px 10px 4px 12px', fontSize:'.75rem', fontWeight:700, color:'#1d4ed8' }}>
+                              👧 {k.age} yr
+                              <button type="button" onClick={() => setKids(p => p.filter((_,j)=>j!==i))}
+                                style={{ background:'none', border:'none', cursor:'pointer', color:'#3b82f6', fontSize:'1rem', lineHeight:1, padding:0 }}>×</button>
+                            </span>
+                          ))}
+                        </div>
+                    }
                   </div>
                 </div>
 
