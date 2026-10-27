@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useOutletContext, useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
@@ -6,55 +6,116 @@ const COUNTRY_CODES = ['+91','+1','+44','+61','+65','+60','+66','+971','+81','+4
 const VEHICLE_PRICES = { Sedan: 0, SUV: 15, Van: 25, Minibus: 40 };
 
 const DEFAULT_PICKUPS = {
-  Bangkok:             ['Suvarnabhumi Airport (BKK)', 'Don Mueang Airport (DMK)', 'Chatuchak', 'Sukhumvit', 'Silom', 'Khao San Road'],
-  Pattaya:             ['North Pattaya Road', 'Walking Street', 'Jomtien Beach', 'Central Pattaya'],
-  Phuket:              ['Phuket International Airport', 'Patong Beach', 'Kata Beach', 'Karon Beach', 'Old Phuket Town'],
-  Krabi:               ['Krabi Airport', 'Ao Nang', 'Railay Beach', 'Krabi Town'],
-  Samui:               ['Samui Airport', 'Chaweng Beach', 'Lamai Beach', 'Bophut Fisherman\'s Village'],
-  'Chiang Mai':        ['Chiang Mai Airport', 'Old City', 'Nimman Road', 'Night Bazaar'],
+  Bangkok:      ['Suvarnabhumi Airport (BKK)', 'Don Mueang Airport (DMK)', 'Chatuchak', 'Sukhumvit', 'Silom', 'Khao San Road'],
+  Pattaya:      ['North Pattaya Road', 'Walking Street', 'Jomtien Beach', 'Central Pattaya'],
+  Phuket:       ['Phuket International Airport', 'Patong Beach', 'Kata Beach', 'Karon Beach', 'Old Phuket Town'],
+  Krabi:        ['Krabi Airport', 'Ao Nang', 'Railay Beach', 'Krabi Town'],
+  Samui:        ['Samui Airport', 'Chaweng Beach', 'Lamai Beach', "Bophut Fisherman's Village"],
+  'Chiang Mai': ['Chiang Mai Airport', 'Old City', 'Nimman Road', 'Night Bazaar'],
 };
 
 const LOCATIONS = Object.keys(DEFAULT_PICKUPS);
 
+/* ── Child Age Popup ─────────────────────────────────────── */
+function ChildAgePopup({ onAdd, onClose }) {
+  const [age, setAge] = useState('');
+  const inputRef = useRef(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  function handleAdd() {
+    const n = parseInt(age, 10);
+    if (!age || isNaN(n) || n < 0 || n > 17) return;
+    onAdd(n);
+    setAge('');
+  }
+
+  return (
+    <div className="child-popup-backdrop" onMouseDown={onClose}>
+      <div className="child-popup" onMouseDown={e => e.stopPropagation()}>
+        <div className="child-popup-title">Child's Age</div>
+        <p className="child-popup-hint">Enter age (0 – 17 years)</p>
+        <input
+          ref={inputRef}
+          type="number"
+          min="0"
+          max="17"
+          value={age}
+          onChange={e => setAge(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleAdd()}
+          placeholder="e.g. 5"
+          className="child-popup-input"
+        />
+        <div className="child-popup-actions">
+          <button type="button" className="child-popup-cancel" onClick={onClose}>Cancel</button>
+          <button
+            type="button"
+            className="child-popup-add"
+            onClick={handleAdd}
+            disabled={!age || isNaN(parseInt(age,10)) || parseInt(age,10) < 0 || parseInt(age,10) > 17}
+          >
+            Add Child
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main Component ──────────────────────────────────────── */
 export default function TransferDetail() {
-  const data          = useOutletContext();
+  const data            = useOutletContext();
   const { transferSlug } = useParams();
-  const location      = useLocation();
-  const navigate      = useNavigate();
+  const location        = useLocation();
+  const navigate        = useNavigate();
 
   const rawTransfer = location.state?.transfer
     || (data.transfers || []).find(t => t.id === transferSlug);
 
-  // ── form state ────────────────────────────────────────────────
-  const [startDest,   setStartDest]   = useState(rawTransfer?.from?.split(' ')[0] || LOCATIONS[0]);
-  const [endDest,     setEndDest]     = useState(rawTransfer?.to?.split(' ')[0]   || LOCATIONS[1]);
-  const [pickup,      setPickup]      = useState('');
-  const [dropPoint,   setDrop]        = useState('');
-  const [vehicle,     setVehicle]     = useState(rawTransfer?.vehicles?.[0] || 'Sedan');
-  const [adults,      setAdults]      = useState(2);
-  const [children,    setChildren]    = useState(0);
-  const [selDate,     setDate]        = useState('');
-  const [flightNo,    setFlightNo]    = useState('');
-  const [flightType,  setFlightType]  = useState('Arrival');
-  const [flightTime,  setFlightTime]  = useState('');
-  const [pickupTime,  setPickupTime]  = useState('');
-  const [airportRep,  setAirportRep]  = useState('Yes');
-  const [promo,       setPromo]       = useState('');
-  const [promoApplied,setPromoApplied]= useState(false);
-  const [errors,      setErrors]      = useState({});
+  /* personal info */
+  const [fullName,     setFullName]     = useState('');
+  const [countryCode,  setCountryCode]  = useState('+91');
+  const [whatsapp,     setWhatsapp]     = useState('');
+  const [email,        setEmail]        = useState('');
+
+  /* booking state */
+  const [startDest,  setStartDest]  = useState(rawTransfer?.from?.split(' ')[0] || LOCATIONS[0]);
+  const [endDest,    setEndDest]    = useState(rawTransfer?.to?.split(' ')[0]   || LOCATIONS[1]);
+  const [pickup,     setPickup]     = useState('');
+  const [dropPoint,  setDrop]       = useState('');
+  const [vehicle,    setVehicle]    = useState(rawTransfer?.vehicles?.[0] || 'Sedan');
+  const [adults,     setAdults]     = useState(2);
+  const [childrenList, setChildrenList] = useState([]);   // [{age}]
+  const [showChildPopup, setShowChildPopup] = useState(false);
+  const [selDate,    setDate]       = useState('');
+  const [flightNo,   setFlightNo]   = useState('');
+  const [flightType, setFlightType] = useState('Arrival');
+  const [flightTime, setFlightTime] = useState('');
+  const [pickupTime, setPickupTime] = useState('');
+  const [airportRep, setAirportRep] = useState('Yes');
+  const [promo,      setPromo]      = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [errors,     setErrors]     = useState({});
 
   const defaultPickups = DEFAULT_PICKUPS[startDest] || [];
-  const vehicles = rawTransfer?.vehicles || ['Sedan', 'SUV', 'Van'];
+  const vehicles       = rawTransfer?.vehicles || ['Sedan', 'SUV', 'Van'];
 
-  // base price from string e.g. "From $25"
-  const basePrice = rawTransfer
-    ? parseFloat((rawTransfer.price || 'From $0').replace(/[^0-9.]/g, ''))
-    : 0;
+  const basePrice    = rawTransfer ? parseFloat((rawTransfer.price || 'From $0').replace(/[^0-9.]/g, '')) : 0;
   const vehicleExtra = VEHICLE_PRICES[vehicle] || 0;
   const perPerson    = basePrice + vehicleExtra;
-  const subtotal     = perPerson * adults + (perPerson * 0.5) * children;
+  const numChildren  = childrenList.length;
+  const subtotal     = perPerson * adults + (perPerson * 0.5) * numChildren;
   const discount     = promoApplied ? Math.round(subtotal * 0.1) : 0;
   const total        = subtotal - discount;
+
+  function addChild(age) {
+    setChildrenList(prev => [...prev, { age }]);
+    setShowChildPopup(false);
+  }
+
+  function removeChild(idx) {
+    setChildrenList(prev => prev.filter((_, i) => i !== idx));
+  }
 
   function applyPromo() {
     if (promo.trim().toUpperCase() === 'SAVE10') setPromoApplied(true);
@@ -63,8 +124,11 @@ export default function TransferDetail() {
 
   function validate() {
     const e = {};
-    if (!selDate)           e.date    = 'Please select a date';
-    if (!pickup.trim())     e.pickup  = 'Select or enter pick-up point';
+    if (!fullName.trim())   e.fullName = 'Please enter your full name';
+    if (!whatsapp.trim())   e.whatsapp = 'Please enter your WhatsApp number';
+    if (!email.trim())      e.email    = 'Please enter your email';
+    if (!selDate)           e.date     = 'Please select a date';
+    if (!pickup.trim())     e.pickup   = 'Select or enter pick-up point';
     return Object.keys(e).length === 0 ? (setErrors({}), true) : (setErrors(e), false);
   }
 
@@ -76,7 +140,7 @@ export default function TransferDetail() {
         country: data.name,
         image: rawTransfer?.image,
         price: `$${total}`,
-        prefill: { startDest, endDest, pickup, dropPoint, vehicle, adults, children, date: selDate, flightNo, flightType, flightTime, pickupTime, airportRep, promo, total },
+        prefill: { fullName, countryCode, whatsapp, email, startDest, endDest, pickup, dropPoint, vehicle, adults, childrenList, date: selDate, flightNo, flightType, flightTime, pickupTime, airportRep, promo, total },
         paymentMethod: method,
       }
     });
@@ -131,8 +195,9 @@ export default function TransferDetail() {
 
         /* ── Form card ── */
         .trd-form-card { background:white; border-radius:20px; padding:32px; box-shadow:0 4px 20px rgba(0,0,0,0.07); }
-        .trd-form-card h2 { font-size:1.25rem; font-weight:800; color:#1e293b; margin-bottom:24px; }
-        .trd-form { display:flex; flex-direction:column; gap:16px; }
+        .trd-form-card h2 { font-size:1.25rem; font-weight:800; color:#1e293b; margin-bottom:8px; }
+        .trd-form-section-label { font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin:20px 0 12px; }
+        .trd-form { display:flex; flex-direction:column; gap:14px; }
         .trd-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
         .trd-field { display:flex; flex-direction:column; gap:5px; }
         .trd-field label { font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; }
@@ -140,7 +205,13 @@ export default function TransferDetail() {
         .trd-field input:focus,.trd-field select:focus { border-color:#f97316; box-shadow:0 0 0 3px rgba(249,115,22,0.1); }
         .trd-field.error input,.trd-field.error select { border-color:#ef4444; }
         .trd-err { font-size:0.72rem; color:#ef4444; font-weight:600; }
-        .trd-divider { height:1px; background:#f1f5f9; margin:4px 0; }
+        .trd-divider { height:1px; background:#f1f5f9; margin:6px 0; }
+
+        /* whatsapp row */
+        .trd-wa-row { display:flex; gap:8px; }
+        .trd-wa-row select { flex:0 0 90px; padding:11px 8px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:0.85rem; color:#1e293b; font-weight:600; outline:none; background:white; font-family:inherit; transition:border-color 0.2s; }
+        .trd-wa-row select:focus { border-color:#f97316; }
+        .trd-wa-row input { flex:1; }
 
         /* vehicle selector */
         .trd-vehicles { display:flex; gap:8px; flex-wrap:wrap; }
@@ -148,14 +219,41 @@ export default function TransferDetail() {
         .trd-vehicle-btn.active { border-color:#f97316; background:#fff7ed; color:#c2410c; }
         .trd-vehicle-btn:hover { border-color:#f97316; }
 
-        /* pax counter */
-        .trd-pax-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-        .trd-pax-box { background:#f8fafc; border-radius:12px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; }
+        /* pax counter — adults */
+        .trd-pax-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start; }
+        .trd-pax-box { background:#f8fafc; border-radius:12px; padding:12px 16px; }
+        .trd-pax-top { display:flex; justify-content:space-between; align-items:center; }
         .trd-pax-label { font-size:0.78rem; font-weight:700; color:#64748b; text-transform:uppercase; }
         .trd-pax-ctrl { display:flex; align-items:center; gap:10px; }
         .trd-pax-btn { width:28px; height:28px; border-radius:8px; border:1.5px solid #e2e8f0; background:white; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:700; color:#1e293b; transition:all 0.15s; font-family:inherit; }
         .trd-pax-btn:hover { border-color:#f97316; color:#f97316; }
         .trd-pax-num { font-size:1rem; font-weight:800; color:#1e293b; min-width:18px; text-align:center; }
+
+        /* child box */
+        .trd-child-box { background:#f8fafc; border-radius:12px; padding:12px 16px; position:relative; }
+        .trd-child-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+        .trd-child-add-btn { width:28px; height:28px; border-radius:8px; border:1.5px solid #f97316; background:white; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:700; color:#f97316; transition:all 0.15s; font-family:inherit; }
+        .trd-child-add-btn:hover { background:#fff7ed; }
+        .trd-child-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+        .trd-child-chip { display:inline-flex; align-items:center; gap:5px; background:linear-gradient(135deg,#fff7ed,#ffedd5); border:1.5px solid #fed7aa; border-radius:20px; padding:3px 10px 3px 12px; font-size:0.78rem; font-weight:700; color:#c2410c; }
+        .trd-child-chip-remove { background:none; border:none; cursor:pointer; color:#f97316; font-size:0.9rem; line-height:1; padding:0; display:flex; align-items:center; }
+        .trd-child-chip-remove:hover { color:#dc2626; }
+        .trd-child-empty { font-size:0.75rem; color:#94a3b8; font-style:italic; }
+
+        /* ── Child Age Popup ── */
+        .child-popup-backdrop { position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center; background:rgba(15,23,42,0.35); backdrop-filter:blur(4px); }
+        .child-popup { background:white; border-radius:20px; padding:28px 28px 24px; width:300px; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:popIn 0.2s cubic-bezier(0.34,1.56,0.64,1); }
+        @keyframes popIn { from { opacity:0; transform:scale(0.85) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+        .child-popup-title { font-size:1.1rem; font-weight:800; color:#1e293b; margin-bottom:4px; }
+        .child-popup-hint { font-size:0.82rem; color:#64748b; margin-bottom:16px; }
+        .child-popup-input { width:100%; padding:13px 16px; border:2px solid #e2e8f0; border-radius:12px; font-size:1.1rem; font-weight:700; color:#1e293b; text-align:center; outline:none; font-family:inherit; transition:border-color 0.2s; box-sizing:border-box; }
+        .child-popup-input:focus { border-color:#f97316; box-shadow:0 0 0 3px rgba(249,115,22,0.12); }
+        .child-popup-actions { display:flex; gap:10px; margin-top:18px; }
+        .child-popup-cancel { flex:1; padding:11px; border:1.5px solid #e2e8f0; background:white; border-radius:10px; font-size:0.88rem; font-weight:600; color:#64748b; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+        .child-popup-cancel:hover { border-color:#94a3b8; color:#1e293b; }
+        .child-popup-add { flex:1; padding:11px; background:linear-gradient(135deg,#f97316,#fb923c); border:none; border-radius:10px; font-size:0.88rem; font-weight:700; color:white; cursor:pointer; font-family:inherit; transition:all 0.2s; box-shadow:0 4px 12px rgba(249,115,22,0.35); }
+        .child-popup-add:hover:not(:disabled) { background:linear-gradient(135deg,#ea580c,#f97316); box-shadow:0 6px 18px rgba(249,115,22,0.45); }
+        .child-popup-add:disabled { opacity:0.45; cursor:not-allowed; }
 
         /* promo */
         .trd-promo-row { display:flex; gap:8px; }
@@ -187,8 +285,17 @@ export default function TransferDetail() {
           .trd-back-btn { left:20px; top:64px; }
           .trd-hero-title { font-size:1.8rem; }
           .trd-row { grid-template-columns:1fr; }
+          .trd-pax-row { grid-template-columns:1fr; }
         }
       `}</style>
+
+      {/* Child age popup */}
+      {showChildPopup && (
+        <ChildAgePopup
+          onAdd={addChild}
+          onClose={() => setShowChildPopup(false)}
+        />
+      )}
 
       {/* ── Hero ── */}
       <div className="trd-hero">
@@ -232,6 +339,51 @@ export default function TransferDetail() {
         <div className="trd-form-card">
           <h2>Book Your Transfer</h2>
           <div className="trd-form">
+
+            {/* ── Personal Info ── */}
+            <div className="trd-form-section-label">👤 Personal Information</div>
+
+            <div className={`trd-field${errors.fullName ? ' error' : ''}`}>
+              <label>Full Name</label>
+              <input
+                value={fullName}
+                onChange={e => setFullName(e.target.value)}
+                placeholder="e.g. Rahul Sharma"
+              />
+              {errors.fullName && <span className="trd-err">{errors.fullName}</span>}
+            </div>
+
+            <div className={`trd-field${errors.whatsapp ? ' error' : ''}`}>
+              <label>WhatsApp Number</label>
+              <div className="trd-wa-row">
+                <select value={countryCode} onChange={e => setCountryCode(e.target.value)}>
+                  {COUNTRY_CODES.map(c => <option key={c}>{c}</option>)}
+                </select>
+                <input
+                  value={whatsapp}
+                  onChange={e => setWhatsapp(e.target.value)}
+                  placeholder="e.g. 9876543210"
+                  type="tel"
+                />
+              </div>
+              {errors.whatsapp && <span className="trd-err">{errors.whatsapp}</span>}
+            </div>
+
+            <div className={`trd-field${errors.email ? ' error' : ''}`}>
+              <label>Email Address</label>
+              <input
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="e.g. rahul@example.com"
+                type="email"
+              />
+              {errors.email && <span className="trd-err">{errors.email}</span>}
+            </div>
+
+            <div className="trd-divider" />
+
+            {/* ── Trip Details ── */}
+            <div className="trd-form-section-label">🗺️ Trip Details</div>
 
             {/* Destinations */}
             <div className="trd-row">
@@ -288,26 +440,57 @@ export default function TransferDetail() {
               </div>
             </div>
 
-            {/* Pax + Date */}
+            {/* Passengers */}
             <div className="trd-pax-row">
+
+              {/* Adults */}
               <div className="trd-pax-box">
-                <span className="trd-pax-label">Adult</span>
-                <div className="trd-pax-ctrl">
-                  <button type="button" className="trd-pax-btn" onClick={() => setAdults(a => Math.max(1, a - 1))}>−</button>
-                  <span className="trd-pax-num">{adults}</span>
-                  <button type="button" className="trd-pax-btn" onClick={() => setAdults(a => a + 1)}>+</button>
+                <div className="trd-pax-top">
+                  <span className="trd-pax-label">Adults</span>
+                  <div className="trd-pax-ctrl">
+                    <button type="button" className="trd-pax-btn" onClick={() => setAdults(a => Math.max(1, a - 1))}>−</button>
+                    <span className="trd-pax-num">{adults}</span>
+                    <button type="button" className="trd-pax-btn" onClick={() => setAdults(a => a + 1)}>+</button>
+                  </div>
                 </div>
               </div>
-              <div className="trd-pax-box">
-                <span className="trd-pax-label">Child</span>
-                <div className="trd-pax-ctrl">
-                  <button type="button" className="trd-pax-btn" onClick={() => setChildren(c => Math.max(0, c - 1))}>−</button>
-                  <span className="trd-pax-num">{children}</span>
-                  <button type="button" className="trd-pax-btn" onClick={() => setChildren(c => c + 1)}>+</button>
+
+              {/* Children — age-popup logic */}
+              <div className="trd-child-box">
+                <div className="trd-child-top">
+                  <span className="trd-pax-label">Children</span>
+                  <button
+                    type="button"
+                    className="trd-child-add-btn"
+                    onClick={() => setShowChildPopup(true)}
+                    title="Add a child"
+                  >
+                    +
+                  </button>
                 </div>
+
+                {childrenList.length === 0 ? (
+                  <span className="trd-child-empty">No children added</span>
+                ) : (
+                  <div className="trd-child-chips">
+                    {childrenList.map((child, idx) => (
+                      <span key={idx} className="trd-child-chip">
+                        👧 {child.age} yr
+                        <button
+                          type="button"
+                          className="trd-child-chip-remove"
+                          onClick={() => removeChild(idx)}
+                          aria-label="Remove child"
+                        >×</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
+
             </div>
 
+            {/* Date */}
             <div className={`trd-field${errors.date ? ' error' : ''}`}>
               <label>Date</label>
               <input type="date" value={selDate} min={new Date().toISOString().split('T')[0]} onChange={e => setDate(e.target.value)} />
@@ -317,6 +500,8 @@ export default function TransferDetail() {
             <div className="trd-divider" />
 
             {/* Flight details */}
+            <div className="trd-form-section-label">✈️ Flight Details</div>
+
             <div className="trd-row">
               <div className="trd-field">
                 <label>Flight No.</label>
@@ -342,7 +527,6 @@ export default function TransferDetail() {
               </div>
             </div>
 
-            {/* Airport rep */}
             <div className="trd-field">
               <label>Airport Rep Service</label>
               <select value={airportRep} onChange={e => setAirportRep(e.target.value)}>
@@ -378,12 +562,12 @@ export default function TransferDetail() {
               <span>Adult × {adults}</span>
               <span>${perPerson * adults}</span>
             </div>
-            {children > 0 && (
-              <div className="trd-price-row">
-                <span>Child × {children}</span>
-                <span>${(perPerson * 0.5 * children).toFixed(0)}</span>
+            {numChildren > 0 && childrenList.map((child, idx) => (
+              <div className="trd-price-row" key={idx}>
+                <span>Child ({child.age} yr)</span>
+                <span>${(perPerson * 0.5).toFixed(0)}</span>
               </div>
-            )}
+            ))}
             {promoApplied && (
               <div className="trd-price-row discount">
                 <span>Promo (SAVE10)</span>
