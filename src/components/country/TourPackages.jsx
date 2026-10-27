@@ -1,10 +1,42 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+
+/* ---------- tiny inline icon set ---------- */
+const PATHS = {
+  search: 'M11 18a7 7 0 100-14 7 7 0 000 14zM21 21l-4.5-4.5',
+  briefcase: 'M4 8h16v11H4zM9 8V5h6v3M4 13h16',
+  calendar: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',
+  clock: 'M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2',
+  pin: 'M12 21s7-6.2 7-11.5A7 7 0 005 9.5C5 14.8 12 21 12 21zM12 12a2.5 2.5 0 100-5 2.5 2.5 0 000 5z',
+  arrow: 'M5 12h14M13 6l6 6-6 6',
+  flame: 'M12 2c1 4 5 6 5 11a5 5 0 01-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-10z',
+};
+
+function Icon({ name, size = 18, fill = 'none', sw = 1.8 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor"
+      strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={PATHS[name]} />
+    </svg>
+  );
+}
+
+const INCLUDE_ICONS = [
+  ['hotel', '🛏️'], ['resort', '🏝️'], ['flight', '✈️'], ['meal', '🍴'], ['breakfast', '🍴'],
+  ['island', '⛵'], ['tour', '🎫'], ['transport', '🚗'], ['transfer', '🚗'], ['spa', '💆'],
+  ['activit', '⛰️'], ['guide', '🧭'], ['visa', '🛂'], ['insurance', '🛡️'],
+];
+const includeIcon = (name = '') => {
+  const n = name.toLowerCase();
+  const hit = INCLUDE_ICONS.find(([k]) => n.includes(k));
+  return hit ? hit[1] : '✔';
+};
 
 export default function TourPackages() {
   const data = useOutletContext();
   const packages = data.tourPackages || [];
+  const resultsRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredPackages = searchQuery.trim()
@@ -19,6 +51,17 @@ export default function TourPackages() {
       })
     : packages;
 
+  const featured = filteredPackages[0];
+  const rest = filteredPackages.slice(1);
+
+  const scrollToResults = () =>
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const bookLink = (pkg) => ({
+    to: `/${data.slug}/package/${pkg.id}`,
+    state: { pkg, country: data },
+  });
+
   return (
     <div className="packages-page">
       <Helmet>
@@ -26,514 +69,229 @@ export default function TourPackages() {
       </Helmet>
 
       <style>{`
-        .packages-page {
-          background: #fafaf9;
-          min-height: 100vh;
+        .packages-page { background:#fafaf9; min-height:100vh; color:#1e293b; }
+        .packages-page * { box-sizing:border-box; }
+
+        /* ---------- HERO ---------- */
+        .packages-page .pkg-hero { position:relative; color:#fff; overflow:hidden; padding:120px 1.5rem 120px; }
+        .packages-page .pkg-hero-bg { position:absolute; inset:0; background-size:cover; background-position:center; }
+        .packages-page .pkg-hero-bg::after { content:''; position:absolute; inset:0;
+          background:linear-gradient(90deg, rgba(10,22,40,.82) 0%, rgba(10,22,40,.45) 50%, rgba(10,22,40,0) 100%),
+                     linear-gradient(180deg, rgba(10,22,40,.55) 0%, transparent 35%); }
+        .packages-page .pkg-wave { position:absolute; left:0; bottom:-1px; width:100%; height:60px; display:block; }
+        .packages-page .pkg-hero-inner { position:relative; z-index:2; max-width:1180px; margin:0 auto; }
+        .packages-page .pkg-hero h1 { font-size:3.6rem; line-height:1.05; font-weight:800; letter-spacing:-1.5px;
+          margin:0 0 16px; text-shadow:0 4px 24px rgba(0,0,0,.35); max-width:620px; }
+        .packages-page .pkg-hero h1 .pkg-accent { display:inline-flex; align-items:center; gap:14px; color:#ff8a1f; }
+        .packages-page .pkg-hero h1 svg { width:90px; height:22px; flex-shrink:0; }
+        .packages-page .pkg-hero p { max-width:440px; font-size:1.05rem; line-height:1.55; color:rgba(255,255,255,.92); margin:0; }
+
+        /* ---------- SEARCH BAR ---------- */
+        .packages-page .pkg-search-wrap { position:relative; z-index:5; max-width:1000px; margin:-56px auto 0; padding:0 1.5rem; }
+        .packages-page .pkg-search { background:#fff; border-radius:999px; padding:10px; display:flex; align-items:center; gap:12px;
+          box-shadow:0 16px 44px rgba(15,23,42,.16); }
+        .packages-page .pkg-search-field { flex:1; display:flex; align-items:center; gap:14px; background:#f4f6fa;
+          border:1px solid #e6eaf1; border-radius:999px; padding:0 22px; height:50px; min-width:0; }
+        .packages-page .pkg-search-field:focus-within { background:#fff; box-shadow:0 0 0 2px rgba(255,138,31,.4); }
+        .packages-page .pkg-search-field svg { color:#1e293b; flex-shrink:0; }
+        .packages-page .pkg-search-field input { flex:1; min-width:0; border:none; outline:none; background:transparent;
+          font:inherit; font-size:.95rem; color:#1e293b; }
+        .packages-page .pkg-search-field input::placeholder { color:#7b8798; }
+        .packages-page .pkg-clear { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1rem; padding:0; }
+        .packages-page .pkg-clear:hover { color:#ef4444; }
+        .packages-page .pkg-count { display:flex; align-items:center; gap:8px; height:50px; padding:0 18px; border-radius:999px;
+          background:#f4f6fa; border:1px solid #e6eaf1; font-size:.92rem; color:#1e293b; white-space:nowrap; }
+        .packages-page .pkg-search-btn { display:flex; align-items:center; gap:9px; height:50px; padding:0 30px; border:none;
+          border-radius:999px; cursor:pointer; color:#fff; font-size:.98rem; font-weight:700;
+          background:linear-gradient(135deg,#ff7a00,#ff9a2e); box-shadow:0 8px 20px rgba(255,122,0,.35);
+          transition:transform .2s, box-shadow .2s; }
+        .packages-page .pkg-search-btn:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(255,122,0,.45); }
+
+        /* ---------- SECTION ---------- */
+        .packages-page .pkg-grid-section { max-width:1180px; margin:0 auto; padding:34px 1.5rem 80px; scroll-margin-top:90px; }
+
+        /* ---------- FEATURED ---------- */
+        .packages-page .pkg-featured { display:grid; grid-template-columns:1.1fr 1fr; background:#fff; border-radius:22px;
+          overflow:hidden; box-shadow:0 8px 30px rgba(15,23,42,.08); margin-bottom:26px; min-height:300px; }
+        .packages-page .pkg-featured-img { position:relative; overflow:hidden; }
+        .packages-page .pkg-featured-img img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;
+          transition:transform .6s; }
+        .packages-page .pkg-featured:hover .pkg-featured-img img { transform:scale(1.05); }
+        .packages-page .pkg-featured-badge { position:absolute; top:18px; left:18px; z-index:2; display:inline-flex; align-items:center; gap:7px;
+          background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff; padding:9px 18px; border-radius:999px;
+          font-size:.85rem; font-weight:800; text-transform:uppercase; box-shadow:0 6px 16px rgba(220,38,38,.4); }
+        .packages-page .pkg-featured-body { padding:26px 32px 28px; display:flex; flex-direction:column; }
+        .packages-page .pkg-duration-pill { display:inline-flex; align-items:center; gap:7px; align-self:flex-start;
+          background:#fff7ed; color:#ea580c; border:1px solid #fed7aa; padding:6px 14px; border-radius:999px;
+          font-size:.85rem; font-weight:700; margin-bottom:14px; }
+        .packages-page .pkg-featured-body h2 { font-size:2rem; font-weight:800; margin:0 0 8px; color:#0f172a; line-height:1.15; }
+        .packages-page .pkg-featured-subtitle { display:flex; align-items:center; gap:8px; color:#64748b; font-size:1rem; margin:0 0 18px; }
+        .packages-page .pkg-featured-subtitle svg { color:#f97316; flex-shrink:0; }
+        .packages-page .pkg-chips { display:flex; flex-wrap:wrap; gap:8px; }
+        .packages-page .pkg-featured .pkg-chips { margin-bottom:22px; }
+        .packages-page .pkg-chip { display:inline-flex; align-items:center; gap:7px; background:#f4f6fa; color:#334155;
+          border:1px solid #e8ecf2; padding:6px 14px; border-radius:999px; font-size:.85rem; font-weight:500; }
+        .packages-page .pkg-chip i { font-style:normal; }
+        .packages-page .pkg-featured-footer { display:flex; justify-content:space-between; align-items:center; gap:14px;
+          border-top:1px solid #eef1f5; padding-top:18px; margin-top:auto; }
+        .packages-page .pkg-price-label { font-size:.78rem; color:#64748b; text-transform:uppercase; letter-spacing:.4px; }
+        .packages-page .pkg-price { font-size:2rem; font-weight:800; color:#0f172a; line-height:1.15; }
+        .packages-page .pkg-price small { font-size:.95rem; font-weight:400; color:#64748b; }
+        .packages-page .pkg-cta { display:inline-flex; align-items:center; gap:9px; background:linear-gradient(135deg,#ff7a00,#ff9a2e);
+          color:#fff; text-decoration:none; font-weight:700; padding:14px 28px; border-radius:999px; font-size:.98rem;
+          box-shadow:0 8px 20px rgba(255,122,0,.35); transition:transform .2s, box-shadow .2s; white-space:nowrap; }
+        .packages-page .pkg-cta:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(255,122,0,.45); }
+
+        /* ---------- CARDS (last row centered) ---------- */
+        .packages-page .pkg-grid { display:flex; flex-wrap:wrap; justify-content:center; gap:22px; }
+        .packages-page .pkg-card { width:calc((100% - 44px) / 3); background:#fff; border-radius:18px; overflow:hidden;
+          box-shadow:0 6px 22px rgba(15,23,42,.07); display:flex; flex-direction:column; transition:transform .3s, box-shadow .3s; }
+        .packages-page .pkg-card:hover { transform:translateY(-5px); box-shadow:0 16px 38px rgba(15,23,42,.13); }
+        .packages-page .pkg-card-img { position:relative; height:160px; overflow:hidden; }
+        .packages-page .pkg-card-img img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s; }
+        .packages-page .pkg-card:hover .pkg-card-img img { transform:scale(1.07); }
+        .packages-page .pkg-card-badge { position:absolute; top:12px; right:12px; z-index:2; background:linear-gradient(135deg,#dc2626,#ef4444);
+          color:#fff; padding:6px 14px; border-radius:999px; font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.3px; }
+        .packages-page .pkg-card-duration { position:absolute; left:14px; bottom:12px; z-index:2; display:inline-flex; align-items:center; gap:7px;
+          background:rgba(15,23,42,.75); backdrop-filter:blur(6px); color:#fff; padding:6px 12px; border-radius:10px;
+          font-size:.85rem; font-weight:700; }
+        .packages-page .pkg-card-body { padding:14px 18px 18px; display:flex; flex-direction:column; flex:1; }
+        .packages-page .pkg-card-body h3 { font-size:1.2rem; font-weight:800; margin:0 0 3px; color:#0f172a; }
+        .packages-page .pkg-card-subtitle { color:#64748b; font-size:.9rem; margin:0 0 12px; }
+        .packages-page .pkg-card .pkg-chips { gap:6px; margin-bottom:16px; }
+        .packages-page .pkg-card .pkg-chip { padding:4px 11px; font-size:.78rem; }
+        .packages-page .pkg-card-footer { display:flex; justify-content:space-between; align-items:center; margin-top:auto; }
+        .packages-page .pkg-card-price { font-size:1.55rem; font-weight:800; color:#0f172a; }
+        .packages-page .pkg-card-btn { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#ff7a00,#ff9a2e);
+          color:#fff; text-decoration:none; font-weight:700; font-size:.9rem; padding:10px 22px; border-radius:999px;
+          box-shadow:0 6px 16px rgba(255,122,0,.3); transition:transform .2s, box-shadow .2s; }
+        .packages-page .pkg-card-btn:hover { transform:translateY(-2px); box-shadow:0 10px 22px rgba(255,122,0,.42); }
+
+        /* ---------- EMPTY ---------- */
+        .packages-page .pkg-empty { text-align:center; padding:70px 20px; background:#fff; border-radius:20px; box-shadow:0 4px 20px rgba(0,0,0,.05); }
+        .packages-page .pkg-empty h3 { font-size:1.8rem; margin:0 0 10px; }
+        .packages-page .pkg-empty p { color:#64748b; margin:0 0 24px; font-size:1.05rem; }
+        .packages-page .pkg-empty .pkg-cta { border:none; cursor:pointer; font-family:inherit; }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width:1000px) { .packages-page .pkg-card { width:calc((100% - 22px) / 2); } }
+        @media (max-width:860px) {
+          .packages-page .pkg-hero { padding:105px 1.25rem 110px; }
+          .packages-page .pkg-hero h1 { font-size:2.4rem; }
+          .packages-page .pkg-featured { grid-template-columns:1fr; }
+          .packages-page .pkg-featured-img { height:240px; }
+          .packages-page .pkg-featured-body h2 { font-size:1.6rem; }
+          .packages-page .pkg-search { flex-wrap:wrap; border-radius:26px; }
+          .packages-page .pkg-search-field { flex-basis:100%; }
+          .packages-page .pkg-count, .packages-page .pkg-search-btn { flex:1; justify-content:center; }
         }
-
-        .packages-page .pkg-hero {
-          position: relative;
-          height: 50vh;
-          min-height: 380px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          color: white;
-          overflow: hidden;
-        }
-
-        .packages-page .pkg-hero-bg {
-          position: absolute;
-          inset: 0;
-          background-size: cover;
-          background-position: center;
-          filter: brightness(0.45);
-          transform: scale(1.05);
-        }
-
-        .packages-page .pkg-hero-content {
-          position: relative;
-          z-index: 2;
-          max-width: 700px;
-          padding: 0 20px;
-          animation: pkgFadeUp 0.8s ease;
-        }
-
-        @keyframes pkgFadeUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .packages-page .pkg-hero-content h1 {
-          font-size: 3.5rem;
-          font-weight: 800;
-          margin-bottom: 15px;
-          letter-spacing: -1px;
-          text-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-
-        .packages-page .pkg-hero-content h1 span {
-          color: #fb923c;
-        }
-
-        .packages-page .pkg-hero-content p {
-          font-size: 1.2rem;
-          opacity: 0.9;
-          line-height: 1.6;
-        }
-
-        .packages-page .pkg-grid-section {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 60px 1.5rem;
-        }
-
-        /* Featured Package — first card is big */
-        .packages-page .pkg-featured {
-          display: grid;
-          grid-template-columns: 1.2fr 1fr;
-          background: white;
-          border-radius: 20px;
-          overflow: hidden;
-          box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-          margin-bottom: 40px;
-          transition: transform 0.3s, box-shadow 0.3s;
-          min-height: 400px;
-        }
-
-        .packages-page .pkg-featured:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 16px 50px rgba(0,0,0,0.12);
-        }
-
-        .packages-page .pkg-featured-img {
-          position: relative;
-          overflow: hidden;
-        }
-
-        .packages-page .pkg-featured-img img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.6s ease;
-        }
-
-        .packages-page .pkg-featured:hover .pkg-featured-img img {
-          transform: scale(1.06);
-        }
-
-        .packages-page .pkg-featured-badge {
-          position: absolute;
-          top: 20px;
-          left: 20px;
-          background: linear-gradient(135deg, #dc2626, #ef4444);
-          color: white;
-          padding: 8px 18px;
-          border-radius: 25px;
-          font-size: 0.85rem;
-          font-weight: 700;
-          box-shadow: 0 4px 12px rgba(220,38,38,0.35);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .packages-page .pkg-featured-body {
-          padding: 45px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-        }
-
-        .packages-page .pkg-featured-duration {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: #fff7ed;
-          color: #ea580c;
-          padding: 6px 14px;
-          border-radius: 20px;
-          font-size: 0.85rem;
-          font-weight: 700;
-          margin-bottom: 15px;
-          align-self: flex-start;
-        }
-
-        .packages-page .pkg-featured-body h2 {
-          font-size: 2rem;
-          font-weight: 800;
-          color: #1e293b;
-          margin-bottom: 8px;
-        }
-
-        .packages-page .pkg-featured-subtitle {
-          color: #64748b;
-          font-size: 1rem;
-          margin-bottom: 20px;
-        }
-
-        .packages-page .pkg-includes {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin-bottom: 25px;
-        }
-
-        .packages-page .pkg-include-tag {
-          background: #f1f5f9;
-          color: #334155;
-          padding: 6px 14px;
-          border-radius: 8px;
-          font-size: 0.85rem;
-          font-weight: 500;
-        }
-
-        .packages-page .pkg-featured-footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-top: 1px solid #f1f5f9;
-          padding-top: 20px;
-          margin-top: auto;
-        }
-
-        .packages-page .pkg-price-label {
-          font-size: 0.8rem;
-          color: #94a3b8;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .packages-page .pkg-price {
-          font-size: 2rem;
-          font-weight: 800;
-          color: #1e293b;
-        }
-
-        .packages-page .pkg-price small {
-          font-size: 0.9rem;
-          color: #94a3b8;
-          font-weight: 400;
-        }
-
-        .packages-page .pkg-cta-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          background: linear-gradient(135deg, #f97316, #fb923c);
-          color: white;
-          padding: 14px 28px;
-          border-radius: 50px;
-          text-decoration: none;
-          font-weight: 700;
-          font-size: 0.95rem;
-          box-shadow: 0 6px 15px rgba(249,115,22,0.3);
-          transition: all 0.3s;
-        }
-
-        .packages-page .pkg-cta-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 25px rgba(249,115,22,0.4);
-        }
-
-        /* Regular package grid */
-        .packages-page .pkg-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-          gap: 25px;
-        }
-
-        .packages-page .pkg-card {
-          background: white;
-          border-radius: 16px;
-          overflow: hidden;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-          transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .packages-page .pkg-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 12px 35px rgba(0,0,0,0.1);
-        }
-
-        .packages-page .pkg-card-img {
-          position: relative;
-          height: 220px;
-          overflow: hidden;
-        }
-
-        .packages-page .pkg-card-img img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.5s;
-        }
-
-        .packages-page .pkg-card:hover .pkg-card-img img {
-          transform: scale(1.08);
-        }
-
-        .packages-page .pkg-card-badge {
-          position: absolute;
-          top: 15px;
-          right: 15px;
-          background: linear-gradient(135deg, #dc2626, #ef4444);
-          color: white;
-          padding: 5px 12px;
-          border-radius: 20px;
-          font-size: 0.75rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .packages-page .pkg-card-duration {
-          position: absolute;
-          bottom: 15px;
-          left: 15px;
-          background: rgba(0,0,0,0.7);
-          color: white;
-          padding: 5px 12px;
-          border-radius: 6px;
-          font-size: 0.8rem;
-          font-weight: 600;
-          backdrop-filter: blur(6px);
-        }
-
-        .packages-page .pkg-card-body {
-          padding: 25px;
-        }
-
-        .packages-page .pkg-card-body h3 {
-          font-size: 1.3rem;
-          font-weight: 700;
-          color: #1e293b;
-          margin-bottom: 5px;
-        }
-
-        .packages-page .pkg-card-subtitle {
-          color: #94a3b8;
-          font-size: 0.9rem;
-          margin-bottom: 15px;
-        }
-
-        .packages-page .pkg-card-includes {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          margin-bottom: 20px;
-        }
-
-        .packages-page .pkg-card-includes span {
-          background: #f8fafc;
-          color: #475569;
-          padding: 4px 10px;
-          border-radius: 6px;
-          font-size: 0.78rem;
-        }
-
-        .packages-page .pkg-card-footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-top: 1px solid #f1f5f9;
-          padding-top: 15px;
-        }
-
-        .packages-page .pkg-card-price {
-          font-size: 1.4rem;
-          font-weight: 800;
-          color: #1e293b;
-        }
-
-        .packages-page .pkg-card-btn {
-          background: #1e293b;
-          color: white;
-          padding: 10px 22px;
-          border-radius: 8px;
-          text-decoration: none;
-          font-weight: 600;
-          font-size: 0.85rem;
-          transition: all 0.3s;
-        }
-
-        .packages-page .pkg-card-btn:hover {
-          background: #ff9500;
-        }
-
-        .packages-page .pkg-empty {
-          text-align: center;
-          padding: 80px 20px;
-          background: white;
-          border-radius: 20px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        }
-
-        .packages-page .pkg-empty h3 {
-          font-size: 1.8rem;
-          color: #1e293b;
-          margin-bottom: 10px;
-        }
-
-        .packages-page .pkg-empty p {
-          color: #64748b;
-          margin-bottom: 25px;
-          font-size: 1.1rem;
-        }
-
-        .packages-page .pkg-empty a {
-          display: inline-block;
-          background: linear-gradient(to right, #f97316, #fb923c);
-          color: white;
-          padding: 14px 30px;
-          border-radius: 50px;
-          text-decoration: none;
-          font-weight: 700;
-          box-shadow: 0 8px 20px rgba(249,115,22,0.3);
-        }
-
-        @media (max-width: 900px) {
-          .packages-page .pkg-featured {
-            grid-template-columns: 1fr;
-          }
-
-          .packages-page .pkg-featured-img {
-            height: 250px;
-          }
-
-          .packages-page .pkg-featured-body {
-            padding: 25px;
-          }
-
-          .packages-page .pkg-featured-body h2 {
-            font-size: 1.5rem;
-          }
-
-          .packages-page .pkg-hero-content h1 {
-            font-size: 2.2rem;
-          }
-
-          .packages-page .pkg-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .packages-page .pkg-featured-footer {
-            flex-direction: column;
-            gap: 15px;
-            align-items: flex-start;
-          }
+        @media (max-width:640px) {
+          .packages-page .pkg-card { width:100%; }
+          .packages-page .pkg-featured-footer { flex-direction:column; align-items:flex-start; }
         }
       `}</style>
 
-      {/* Hero Section */}
-      <div className="pkg-hero">
-        <div className="pkg-hero-bg" style={{ backgroundImage: `url(${data.heroImage})` }}></div>
-        <div className="pkg-hero-content">
-          <h1><span>{data.name}</span> Tour Packages</h1>
+      {/* ---------- Hero ---------- */}
+      <section className="pkg-hero">
+        <div className="pkg-hero-bg" style={{ backgroundImage: `url(${data.heroImage})` }} />
+        <div className="pkg-hero-inner">
+          <h1>
+            {data.name} Tour{' '}
+            <span className="pkg-accent">
+              Packages
+              <svg viewBox="0 0 90 22" fill="none" aria-hidden="true">
+                <path d="M2 16 C 25 4, 55 2, 88 8" stroke="#ff8a1f" strokeWidth="3" strokeLinecap="round" />
+              </svg>
+            </span>
+          </h1>
           <p>Perfectly curated multi-day itineraries with hotels, flights, meals, and guided experiences included.</p>
         </div>
-      </div>
+        <svg className="pkg-wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 30 C 240 0, 520 0, 760 24 S 1200 60, 1440 20 L1440 60 L0 60 Z" fill="#fafaf9" />
+        </svg>
+      </section>
 
-      {/* Search Bar */}
-      <div style={{ maxWidth: 1280, margin: '-30px auto 0', padding: '0 1.5rem', position: 'relative', zIndex: 3 }}>
-        <div style={{
-          background: 'white',
-          borderRadius: 16,
-          padding: '16px 24px',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 14,
-          border: '1.5px solid transparent',
-          transition: 'border-color 0.2s',
-        }}
-          onFocus={e => e.currentTarget.style.borderColor = '#f97316'}
-          onBlur={e => e.currentTarget.style.borderColor = 'transparent'}
-        >
-          <span style={{ fontSize: '1.2rem', color: '#94a3b8', flexShrink: 0 }}>🔍</span>
-          <input
-            type="text"
-            placeholder="Search packages by name, duration, inclusions…"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            style={{
-              flex: 1,
-              border: 'none',
-              outline: 'none',
-              fontSize: '1rem',
-              color: '#1e293b',
-              fontWeight: 500,
-              background: 'transparent',
-            }}
-          />
-          <span style={{ fontSize: '0.85rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
-            <strong style={{ color: '#1e293b' }}>{filteredPackages.length}</strong> package{filteredPackages.length !== 1 ? 's' : ''}
-          </span>
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              style={{ background: '#f1f5f9', border: 'none', color: '#64748b', cursor: 'pointer', padding: '5px 12px', borderRadius: 8, fontSize: '0.82rem', fontWeight: 600, transition: 'all 0.2s' }}
-              onMouseOver={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.color = '#ef4444'; }}
-              onMouseOut={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#64748b'; }}
-            >
-              ✕ Clear
-            </button>
-          )}
+      {/* ---------- Search bar ---------- */}
+      <div className="pkg-search-wrap">
+        <div className="pkg-search">
+          <label className="pkg-search-field">
+            <Icon name="search" size={22} />
+            <input
+              type="text"
+              placeholder="Search packages by name, duration, inclusions..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && scrollToResults()}
+            />
+            {searchQuery && (
+              <button type="button" className="pkg-clear" aria-label="Clear search" onClick={() => setSearchQuery('')}>✕</button>
+            )}
+          </label>
+          <div className="pkg-count">
+            <Icon name="briefcase" size={20} />
+            <span>{filteredPackages.length} package{filteredPackages.length !== 1 ? 's' : ''}</span>
+          </div>
+          <button type="button" className="pkg-search-btn" onClick={scrollToResults}>
+            <Icon name="search" size={18} sw={2.2} /> Search
+          </button>
         </div>
       </div>
 
-      <div className="pkg-grid-section">
-        {filteredPackages.length > 0 ? (
+      {/* ---------- Results ---------- */}
+      <div className="pkg-grid-section" ref={resultsRef}>
+        {featured ? (
           <>
             {/* Featured — first package */}
             <div className="pkg-featured">
               <div className="pkg-featured-img">
-                <img src={packages[0].image} alt={packages[0].title} />
-                {packages[0].badge && <span className="pkg-featured-badge">{packages[0].badge}</span>}
+                <img src={featured.image} alt={featured.title} />
+                {featured.badge && (
+                  <span className="pkg-featured-badge"><Icon name="flame" size={16} fill="currentColor" sw={0} />{featured.badge}</span>
+                )}
               </div>
               <div className="pkg-featured-body">
-                <span className="pkg-featured-duration">⏱ {filteredPackages[0].duration}</span>
-                <h2>{filteredPackages[0].title}</h2>
-                <p className="pkg-featured-subtitle">{filteredPackages[0].subtitle}</p>
-                <div className="pkg-includes">
-                  {filteredPackages[0].includes?.map((inc, i) => (
-                    <span key={i} className="pkg-include-tag">{inc}</span>
+                <span className="pkg-duration-pill"><Icon name="calendar" size={15} />{featured.duration}</span>
+                <h2>{featured.title}</h2>
+                <p className="pkg-featured-subtitle"><Icon name="pin" size={18} fill="currentColor" sw={0} />{featured.subtitle}</p>
+                <div className="pkg-chips">
+                  {featured.includes?.map((inc, i) => (
+                    <span key={i} className="pkg-chip"><i>{includeIcon(inc)}</i>{inc}</span>
                   ))}
                 </div>
                 <div className="pkg-featured-footer">
                   <div>
                     <div className="pkg-price-label">Starting from</div>
-                    <div className="pkg-price">{filteredPackages[0].price} <small>/person</small></div>
+                    <div className="pkg-price">{featured.price} <small>/person</small></div>
                   </div>
-                  <Link to={`/${data.slug}/package/${filteredPackages[0].id}`} state={{ pkg: filteredPackages[0], country: data }} className="pkg-cta-btn">Book This Package ➔</Link>
+                  <Link {...bookLink(featured)} className="pkg-cta">Book This Package <Icon name="arrow" size={18} sw={2.4} /></Link>
                 </div>
               </div>
             </div>
 
             {/* Rest of packages */}
-            {filteredPackages.length > 1 && (
+            {rest.length > 0 && (
               <div className="pkg-grid">
-                {filteredPackages.slice(1).map(pkg => (
-                  <div key={pkg.id} className="pkg-card">
+                {rest.map(pkg => (
+                  <article key={pkg.id} className="pkg-card">
                     <div className="pkg-card-img">
-                      <img src={pkg.image} alt={pkg.title} />
+                      <img src={pkg.image} alt={pkg.title} loading="lazy" />
                       {pkg.badge && <span className="pkg-card-badge">{pkg.badge}</span>}
-                      <span className="pkg-card-duration">⏱ {pkg.duration}</span>
+                      <span className="pkg-card-duration"><Icon name="clock" size={16} />{pkg.duration}</span>
                     </div>
                     <div className="pkg-card-body">
                       <h3>{pkg.title}</h3>
                       <p className="pkg-card-subtitle">{pkg.subtitle}</p>
-                      <div className="pkg-card-includes">
+                      <div className="pkg-chips">
                         {pkg.includes?.map((inc, i) => (
-                          <span key={i}>{inc}</span>
+                          <span key={i} className="pkg-chip"><i>{includeIcon(inc)}</i>{inc}</span>
                         ))}
                       </div>
                       <div className="pkg-card-footer">
                         <div className="pkg-card-price">{pkg.price}</div>
-                        <Link to={`/${data.slug}/package/${pkg.id}`} state={{ pkg, country: data }} className="pkg-card-btn">Book Now</Link>
+                        <Link {...bookLink(pkg)} className="pkg-card-btn">Book Now <Icon name="arrow" size={16} sw={2.4} /></Link>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 ))}
               </div>
             )}
@@ -542,15 +300,15 @@ export default function TourPackages() {
           <div className="pkg-empty">
             {searchQuery ? (
               <>
-                <h3>No packages matching "{searchQuery}"</h3>
+                <h3>No packages matching “{searchQuery}”</h3>
                 <p>Try a different keyword or browse all packages.</p>
-                <button onClick={() => setSearchQuery('')} style={{ display: 'inline-block', background: 'linear-gradient(to right,#f97316,#fb923c)', color: 'white', padding: '14px 30px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 700 }}>Clear Search</button>
+                <button type="button" className="pkg-cta" onClick={() => setSearchQuery('')}>Clear Search</button>
               </>
             ) : (
               <>
                 <h3>Tour Packages Coming Soon!</h3>
                 <p>We are crafting the ultimate multi-day packages for {data.name}.</p>
-                <Link to="/enquiry">Enquire Custom Package</Link>
+                <Link to="/enquiry" className="pkg-cta">Enquire Custom Package</Link>
               </>
             )}
           </div>
