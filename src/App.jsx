@@ -41,11 +41,24 @@ export default function App() {
         {/* Auth and Dashboard Routes without Header/Footer */}
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignupPage />} />
-        <Route path="admin-dashboard/*" element={
-          <ProtectedRoute adminOnly>
-            <AdminDashboard />
-          </ProtectedRoute>
-        } />
+        {/* ── Admin Dashboard — explicit sub-routes beat /:country/* in RR scoring ── */}
+        {[
+          '', 'bookings', 'enquiries', 'users', 'promo-codes',
+          'day-tours', 'tour-packages', 'hotels', 'transfers', 'destinations',
+          'reviews', 'settings', 'offices',
+        ].map(sub => (
+          <Route
+            key={`admin-${sub}`}
+            path={sub ? `admin-dashboard/${sub}` : 'admin-dashboard'}
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+        ))}
+
+        {/* ── User Dashboard ─────────────────────────────────────────────────── */}
         <Route path="user-dashboard/*" element={
           <ProtectedRoute userOnly>
             <UserDashboard />

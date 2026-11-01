@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { publicPost } from '../config/api';
 
 /* ── Child Age Popup ───────────────────────── */
 function ChildAgePopup({ onAdd, onClose }) {
@@ -62,6 +63,7 @@ export default function BookingPage() {
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [kids, setKids] = useState([]);        // [{age}] — replaces form.children
   const [showKidPop, setShowKidPop] = useState(false);
+  const [bookingRef, setBookingRef] = useState('');  // from backend
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoError, setPromoError] = useState('');
@@ -95,34 +97,80 @@ export default function BookingPage() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleApplyPromo = () => {
+  const handleApplyPromo = async () => {
     if (!form.promoCode.trim()) return;
-    if (form.promoCode.toUpperCase() === 'PLANTRIP10' || form.promoCode.toUpperCase() === 'WELCOME') {
-      setPromoDiscount(25);
+    setPromoError('');
+    try {
+      const res = await publicPost('/api/promo-codes/validate', {
+        code: form.promoCode.trim().toUpperCase(),
+      });
+      const discVal = res.discount_value ?? res.value ?? 25;
+      setPromoDiscount(Number(discVal));
       setPromoApplied(true);
-      setPromoError('');
-    } else {
-      setPromoError('Invalid promo code. Try "WELCOME"');
-      setPromoApplied(false);
-      setPromoDiscount(0);
+    } catch {
+      const staticCodes = { PLANTRIP10: 25, WELCOME: 20, SAVE10: 15 };
+      const code = form.promoCode.trim().toUpperCase();
+      if (staticCodes[code]) {
+        setPromoDiscount(staticCodes[code]);
+        setPromoApplied(true);
+      } else {
+        setPromoError('Invalid or expired promo code.');
+        setPromoApplied(false);
+        setPromoDiscount(0);
+      }
     }
   };
 
-  const handleFormSubmit = (e) => {
+  async function submitBookingToAPI() {
+    try {
+      const pickup  = form.pickUp  === 'custom' ? form.customPickup : form.pickUp;
+      const dropPt  = form.dropPoint === 'custom' ? form.customDrop : form.dropPoint;
+      const payload = {
+        destination:    destination || 'Trip',
+        country:        country || '',
+        first_name:     form.firstName,
+        last_name:      form.lastName,
+        email:          form.email,
+        phone:          form.telephone,
+        country_code:   form.countryCode,
+        whatsapp:       form.whatsapp,
+        nationality:    form.nationality,
+        travel_date:    form.date,
+        adults:         parseInt(form.adults, 10) || 1,
+        children:       kids.length,
+        pick_up:        pickup,
+        drop_point:     dropPt,
+        special_requests: form.specialRequests,
+        payment_method: paymentMethod,
+        promo_code:     promoApplied ? form.promoCode : '',
+        subtotal:       calculations.subtotal,
+        discount:       calculations.discount,
+        taxes:          calculations.taxes,
+        total_amount:   calculations.total,
+        currency:       'USD',
+      };
+      const res = await publicPost('/api/bookings', payload);
+      if (res.booking_reference) setBookingRef(res.booking_reference);
+    } catch (err) {
+      console.warn('Booking API error (non-blocking):', err.message);
+    }
+  }
+
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (paymentMethod === 'offline') {
-      // Offline goes straight to confirmed booking
+      await submitBookingToAPI();
       setCurrentStep('success');
     } else {
-      // Online directs to the interactive payment gateway step
       setCurrentStep('payment');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  const handlePayNow = (e) => {
+  const handlePayNow = async (e) => {
     e.preventDefault();
     setIsProcessingPayment(true);
+    await submitBookingToAPI();
     setTimeout(() => {
       setIsProcessingPayment(false);
       setCurrentStep('success');
@@ -291,7 +339,7 @@ export default function BookingPage() {
             <div style={{ background: '#f8fafc', borderRadius: 14, padding: '20px 24px', textAlign: 'left', maxWidth: 460, margin: '0 auto 32px', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: '0.9rem', color: '#64748b' }}>
                 <span>Booking Reference:</span>
-                <strong style={{ color: '#0f172a' }}>PTO-{Math.floor(100000 + Math.random() * 900000)}</strong>
+                <strong style={{ color: '#0f172a', fontFamily:'monospace' }}>{bookingRef || `BK-${new Date().getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: '0.9rem', color: '#64748b' }}>
                 <span>Payment Mode:</span>

@@ -58,16 +58,16 @@ export default function LoginPage() {
 
       if (response.ok) {
         if (data.token) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('userName', data.user?.name || data.user?.full_name || formData.login_id);
-          localStorage.setItem('userEmail', data.user?.email || formData.login_id);
-        }
+          const role = data.user?.role || (emailToSend === 'admin@plantriponline.com' ? 'admin' : 'user');
+          localStorage.setItem('token',     data.token);
+          localStorage.setItem('userRole',   role);
+          localStorage.setItem('userName',   data.user?.name || data.user?.full_name || formData.login_id);
+          localStorage.setItem('userEmail',  data.user?.email || formData.login_id);
 
-        // Redirect based on who logged in
-        if (emailToSend === 'admin@plantriponline.com') {
-          navigate('/admin-dashboard');
+          // Redirect based on role
+          navigate(role === 'admin' ? '/admin-dashboard' : '/user-dashboard');
         } else {
-          navigate('/user-dashboard');
+          setError('Login failed — no token received.');
         }
       } else {
         setError(data.message || 'Login failed. Please check your credentials.');

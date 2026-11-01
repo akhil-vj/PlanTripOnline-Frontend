@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
+import { publicPost } from '../config/api';
 
 export default function EnquiryPage() {
   const navigate = useNavigate();
@@ -10,19 +11,26 @@ export default function EnquiryPage() {
     destination: '', travel_type: '', start_date: '', duration: '',
     message: ''
   });
-  const [loading, setLoading] = useState(false);
+  const [loading,   setLoading]   = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error,     setError]     = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
+    setLoading(true); setError('');
+    try {
+      await publicPost('/api/enquiries', formData);
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      setError(err.message || 'Failed to submit. Please try again.');
+    } finally {
       setLoading(false);
-      alert('Enquiry submitted successfully!');
-    }, 1500);
+    }
   };
 
   return (
@@ -482,6 +490,32 @@ export default function EnquiryPage() {
         }
       `}</style>
 
+      {/* ── SUCCESS SCREEN ── */}
+      {submitted && (
+        <div style={{ position:'fixed', inset:0, zIndex:2000, background:'linear-gradient(135deg,#0f172a,#1e293b)',
+          display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column',
+          gap:20, padding:24, fontFamily:"'Inter',system-ui,sans-serif", animation:'fadeIn .4s ease' }}>
+          <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}`}</style>
+          <div style={{ width:80, height:80, borderRadius:'50%', background:'linear-gradient(135deg,#22c55e,#16a34a)',
+            display:'flex', alignItems:'center', justifyContent:'center', fontSize:'2.2rem',
+            boxShadow:'0 12px 40px rgba(34,197,94,.4)' }}>✓</div>
+          <h2 style={{ color:'#fff', fontSize:'1.8rem', fontWeight:900, margin:0, textAlign:'center' }}>Enquiry Submitted!</h2>
+          <p style={{ color:'rgba(255,255,255,.65)', textAlign:'center', maxWidth:380, lineHeight:1.6, margin:0 }}>
+            Thank you, <strong style={{color:'#f97316'}}>{formData.full_name}</strong>! Our team will review your request and contact you within <strong style={{color:'#fff'}}>24 hours</strong>.
+          </p>
+          <div style={{ background:'rgba(255,255,255,.06)', border:'1px solid rgba(255,255,255,.1)',
+            borderRadius:16, padding:'16px 24px', textAlign:'center', marginTop:4 }}>
+            <div style={{ fontSize:'.75rem', color:'rgba(255,255,255,.4)', fontWeight:700, marginBottom:4 }}>We'll reach you at</div>
+            <div style={{ color:'#f97316', fontWeight:800, fontSize:'1rem' }}>{formData.email}</div>
+            {formData.phone && <div style={{ color:'rgba(255,255,255,.6)', fontSize:'.88rem', marginTop:2 }}>{formData.phone}</div>}
+          </div>
+          <button onClick={() => navigate('/')} style={{ marginTop:8, padding:'14px 36px',
+            background:'linear-gradient(135deg,#f97316,#fb923c)', border:'none', borderRadius:14,
+            color:'#fff', fontWeight:800, fontSize:'1rem', cursor:'pointer',
+            boxShadow:'0 6px 20px rgba(249,115,22,.35)' }}>🏠 Back to Home</button>
+        </div>
+      )}
+
       {/* Back Button */}
       <button onClick={() => navigate(-1)} className="back-button" title="Go Back">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -696,6 +730,12 @@ export default function EnquiryPage() {
                   ></textarea>
                 </div>
               </div>
+
+              {error && (
+                <div style={{ background:'rgba(239,68,68,.15)', border:'1px solid rgba(239,68,68,.3)',
+                  borderRadius:10, padding:'12px 16px', marginBottom:16, color:'#fca5a5',
+                  fontSize:'.85rem', fontWeight:500 }}>⚠️ {error}</div>
+              )}
 
               <button type="submit" className={`submit-button ${loading ? 'loading' : ''}`} disabled={loading}>
                 <span className="spinner"></span>

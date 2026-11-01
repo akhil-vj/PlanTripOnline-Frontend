@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useOutletContext, useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { publicPost } from '../../config/api';
 
 const COUNTRY_CODES = ['+91','+1','+44','+61','+65','+60','+66','+971','+81','+49'];
 const VEHICLE_PRICES = { Sedan: 0, SUV: 15, Van: 25, Minibus: 40 };
@@ -84,7 +85,10 @@ export default function TransferDetail() {
   const [rep,         setRep]        = useState('Yes');
   const [promo,       setPromo]      = useState('');
   const [promoOk,     setPromoOk]    = useState(false);
+  const [promoErr,    setPromoErr]   = useState('');
+  const [promoLoading,setPromoLoading]= useState(false);
   const [errors,      setErrors]     = useState({});
+  const [bookingRef,  setBookingRef] = useState('');
 
   const pickups  = DEFAULT_PICKUPS[startDest] || [];
   const vehicles = raw?.vehicles || ['Sedan','SUV','Van'];
@@ -108,7 +112,51 @@ export default function TransferDetail() {
   }
 
   const [showConfirm, setShowConfirm] = useState(false);
-  const bookingRef = `PT-${Math.random().toString(36).slice(2,8).toUpperCase()}`;
+
+  async function applyPromo() {
+    if (!promo.trim()) return;
+    setPromoLoading(true); setPromoErr('');
+    try {
+      await publicPost('/api/promo-codes/validate', { code: promo.trim().toUpperCase() });
+      setPromoOk(true);
+    } catch {
+      // fallback to static codes
+      const staticOk = ['PLANTRIP10','SAVE10','WELCOME'].includes(promo.trim().toUpperCase());
+      setPromoOk(staticOk);
+      if (!staticOk) setPromoErr('Invalid or expired promo code');
+    } finally { setPromoLoading(false); }
+  }
+
+  async function goOffline() {
+    if (!validate()) return;
+    try {
+      const res = await publicPost('/api/bookings', {
+        destination:    raw?.title || 'Transfer',
+        country:        data.name || '',
+        first_name:     fullName.split(' ')[0] || fullName,
+        last_name:      fullName.split(' ').slice(1).join(' ') || '.',
+        email,
+        whatsapp:       `${cc} ${whatsapp}`,
+        travel_date:    selDate,
+        adults,
+        children:       kids.length,
+        pick_up:        pickup,
+        drop_point:     dropPt,
+        payment_method: 'offline',
+        promo_code:     promoOk ? promo : '',
+        subtotal,
+        discount:       disc,
+        taxes:          0,
+        total_amount:   total,
+        currency:       'USD',
+      });
+      if (res.booking_reference) setBookingRef(res.booking_reference);
+    } catch (err) {
+      console.warn('Booking submit error:', err.message);
+    }
+    setShowConfirm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   function goOnline() {
     if (!validate()) return;
@@ -122,12 +170,6 @@ export default function TransferDetail() {
         paymentMethod: 'online',
       }
     });
-  }
-
-  function goOffline() {
-    if (!validate()) return;
-    setShowConfirm(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   if (!raw) return (
@@ -395,7 +437,7 @@ export default function TransferDetail() {
               {/* Ref badge */}
               <div style={{ background:'#f8fafc', border:'1.5px dashed #cbd5e1', borderRadius:14, padding:'14px 20px', textAlign:'center', marginBottom:28 }}>
                 <div style={{ fontSize:'.72rem', color:'#94a3b8', fontWeight:700, letterSpacing:'1px', textTransform:'uppercase', marginBottom:4 }}>Booking Reference</div>
-                <div style={{ fontSize:'1.4rem', fontWeight:900, color:'#f97316', letterSpacing:2 }}>{bookingRef}</div>
+                <div style={{ fontSize:'1.4rem', fontWeight:900, color:'#f97316', letterSpacing:2, fontFamily:'monospace' }}>{bookingRef || 'Pending…'}</div>
               </div>
 
               {/* Details */}
@@ -687,17 +729,24 @@ export default function TransferDetail() {
 
           <div className="td2-promo-row">
             <input className="td2-promo-inp" value={promo}
-              onChange={e => setPromo(e.target.value)}
+              onChange={e => { setPromo(e.target.value); setPromoErr(''); }}
               placeholder="e.g. SAVE10" disabled={promoOk} />
             {!promoOk && (
               <button type="button" className="td2-promo-btn"
-                onClick={() => promo.trim().toUpperCase() === 'SAVE10'
-                  ? setPromoOk(true) : alert('Invalid promo code')}>
-                Apply
+                onClick={applyPromo} disabled={promoLoading}>
+                {promoLoading ? '…' : 'Apply'}
+              </button>
+            )}
+            {promoOk && (
+              <button type="button" className="td2-promo-btn"
+                style={{background:'#e2e8f0',color:'#64748b'}}
+                onClick={() => { setPromoOk(false); setPromo(''); setPromoErr(''); }}>
+                Remove
               </button>
             )}
           </div>
           {promoOk && <div className="td2-promo-ok">✓ 10% discount applied!</div>}
+          {promoErr && <div style={{color:'#ef4444',fontSize:'.78rem',marginTop:4,fontWeight:600}}>⚠ {promoErr}</div>}
 
         </div>
 
