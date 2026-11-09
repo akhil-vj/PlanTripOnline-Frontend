@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { apiFetch } from '../config/api';
 
 export default function LoginPage() {
+  const location = useLocation();
+  const sessionExpired = new URLSearchParams(location.search).get('session') === 'expired';
+
   const [formData, setFormData] = useState({ login_id: '', password: '', remember_me: false });
-  const [error, setError] = useState('');
+  const [error, setError] = useState(sessionExpired ? '⏰ Your session expired. Please log in again.' : '');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pupilTransform, setPupilTransform] = useState('translate(0px, 0px)');

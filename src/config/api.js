@@ -1,5 +1,16 @@
 export const API_BASE_URL = 'https://backend.plantriponline.com';
 
+// ── 401 handler ───────────────────────────────────────────────────────────────
+// Called whenever any admin request gets a 401 Unauthorized response.
+// Clears local storage and redirects to /login.
+function handle401() {
+  ['token', 'userRole', 'userName', 'userEmail'].forEach(k => localStorage.removeItem(k));
+  // Use replace so the user can't navigate back to the protected page
+  if (!window.location.pathname.includes('/login')) {
+    window.location.replace('/login?session=expired');
+  }
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /** Standard public fetch — no auth token */
@@ -19,7 +30,7 @@ export const apiFetch = async (endpoint, options = {}) => {
 export const adminFetch = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
   const url   = `${API_BASE_URL}${endpoint}`;
-  return await fetch(url, {
+  const res   = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -28,9 +39,17 @@ export const adminFetch = async (endpoint, options = {}) => {
       ...options.headers,
     },
   });
+
+  // Auto-logout on expired / invalid token
+  if (res.status === 401) {
+    handle401();
+    throw new Error('Session expired. Please log in again.');
+  }
+
+  return res;
 };
 
-/** Convenience wrapper — returns parsed JSON or throws with message */
+/** GET — returns parsed JSON or throws with message */
 export const adminGet = async (endpoint) => {
   const res = await adminFetch(endpoint);
   if (!res.ok) {
@@ -40,6 +59,7 @@ export const adminGet = async (endpoint) => {
   return res.json();
 };
 
+/** POST */
 export const adminPost = async (endpoint, body) => {
   const res = await adminFetch(endpoint, {
     method: 'POST',
@@ -52,6 +72,7 @@ export const adminPost = async (endpoint, body) => {
   return res.json();
 };
 
+/** PUT */
 export const adminPut = async (endpoint, body) => {
   const res = await adminFetch(endpoint, {
     method: 'PUT',
@@ -64,13 +85,27 @@ export const adminPut = async (endpoint, body) => {
   return res.json();
 };
 
+/** PATCH */
+export const adminPatch = async (endpoint, body) => {
+  const res = await adminFetch(endpoint, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+};
+
+/** DELETE */
 export const adminDelete = async (endpoint) => {
   const res = await adminFetch(endpoint, { method: 'DELETE' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || `Error ${res.status}`);
   }
-  return res.json();
+  return res.json().catch(() => ({ success: true }));
 };
 
 /** Public POST — for bookings, enquiries, promo validation */

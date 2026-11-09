@@ -1,14 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { adminGet } from '../config/api';
 
 /**
- * useAdminApi — generic hook for admin authenticated GET requests.
+ * useAdminApi — generic hook for single admin GET requests.
  *
- * Usage:
- *   const { data, loading, error, refetch } = useAdminApi('/api/admin/dashboard/stats');
- *
- * @param {string|null} endpoint  — API path. Pass null to skip initial fetch.
- * @param {any}         deps      — Extra dependency to trigger re-fetch (optional).
+ * @param {string|null} endpoint  — API path; pass null to skip.
+ * @param {any}         deps      — Extra value to trigger re-fetch.
  */
 export function useAdminApi(endpoint, deps = null) {
   const [data,    setData]    = useState(null);
@@ -30,44 +27,57 @@ export function useAdminApi(endpoint, deps = null) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endpoint, deps]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   return { data, loading, error, refetch: fetchData };
 }
 
 /**
- * useAdminList — paginated list hook with filters.
+ * useAdminList — paginated list hook with server-side filters.
  *
  * Usage:
- *   const { data, loading, error, refetch, setFilters } =
+ *   const { data, loading, error, refetch } =
  *     useAdminList('/api/admin/bookings', { status: '', per_page: 15 });
+ *
+ * Blank / null / undefined filter values are stripped before building the
+ * query string so the backend never receives empty params.
  */
 export function useAdminList(endpoint, defaultFilters = {}) {
-  const [filters,  setFilters]  = useState(defaultFilters);
-  const [data,     setData]     = useState(null);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState(null);
+  const [filters, setFilters] = useState(defaultFilters);
+  const [data,    setData]    = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
+  const abortRef = useRef(null);
 
   const fetchData = useCallback(async () => {
+    // Cancel any previous in-flight request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError(null);
     try {
-      const query = new URLSearchParams(
-        Object.fromEntries(Object.entries(filters).filter(([, v]) => v !== '' && v != null))
-      ).toString();
-      const url = query ? `${endpoint}?${query}` : endpoint;
+      const cleanFilters = Object.fromEntries(
+        Object.entries(filters).filter(([, v]) => v !== '' && v != null)
+      );
+      const qs = new URLSearchParams(cleanFilters).toString();
+      const url = qs ? `${endpoint}?${qs}` : endpoint;
       const json = await adminGet(url);
-      setData(json);
+      if (!controller.signal.aborted) setData(json);
     } catch (err) {
-      setError(err.message || 'Failed to load data');
+      if (!controller.signal.aborted) {
+        setError(err.message || 'Failed to load data');
+      }
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, [endpoint, filters]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+    return () => abortRef.current?.abort();
+  }, [fetchData]);
 
   return { data, loading, error, refetch: fetchData, filters, setFilters };
 }

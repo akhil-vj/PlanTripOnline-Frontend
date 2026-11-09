@@ -46,7 +46,7 @@ function UserPanel({ user, onClose, onUpdate }) {
   async function handleSave() {
     setSaving(true); setMsg('');
     try {
-      await adminPut(`/api/users/${user.id}`, { name, role, status });
+      await adminPut(`/api/admin/users/${user.id}`, { name, role, status });
       setMsg('✓ User updated');
       onUpdate();
     } catch(e) { setMsg(`⚠️ ${e.message}`); }
@@ -140,12 +140,12 @@ function UserPanel({ user, onClose, onUpdate }) {
 }
 
 export default function UsersList() {
-  const { data, loading, error, refetch } = useAdminList('/api/users', {});
+  const { data, loading, error, refetch } = useAdminList('/api/admin/users', {});
   const [search,   setSearch]   = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
   const [selected, setSelected] = useState(null);
 
-  const users = data?.users ?? (Array.isArray(data) ? data : []);
+  const users = data?.users ?? data?.data ?? (Array.isArray(data) ? data : []);
 
   const filtered = users.filter(u => {
     const matchSearch = search.trim()
@@ -158,7 +158,7 @@ export default function UsersList() {
   async function handleDelete(id) {
     if (!window.confirm('Delete this user permanently? This cannot be undone.')) return;
     try {
-      await adminDelete(`/api/users/${id}`);
+      await adminDelete(`/api/admin/users/${id}`);
       refetch();
     } catch(e) { alert(e.message); }
   }
