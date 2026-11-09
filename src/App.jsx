@@ -43,7 +43,7 @@ export default function App() {
         <Route path="signup" element={<SignupPage />} />
         {/* ── Admin Dashboard — explicit sub-routes beat /:country/* in RR scoring ── */}
         {[
-          '', 'bookings', 'enquiries', 'users', 'promo-codes',
+          '', 'home-page', 'bookings', 'enquiries', 'users', 'promo-codes',
           'day-tours', 'tour-packages', 'hotels', 'transfers', 'destinations',
           'reviews', 'settings', 'offices', 'countries', 'profile',
         ].map(sub => (

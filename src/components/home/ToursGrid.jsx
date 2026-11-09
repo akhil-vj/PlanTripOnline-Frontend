@@ -1,13 +1,19 @@
 import { homeTours } from '../../data/homeData';
+import { useHomepageConfig } from '../../services/homepageService';
 
 export default function ToursGrid() {
+  const { trendingTours } = useHomepageConfig();
+  const visibleTours = trendingTours !== undefined ? trendingTours : homeTours;
+
+  if (!visibleTours || visibleTours.length === 0) return null;
+
   return (
     <section className="tours-section">
       <div className="container">
         <h2 className="section-title">Trending <span>Day Tours</span></h2>
         <p className="section-subtitle">Handpicked experiences across Southeast Asia</p>
         <div className="tours-grid" id="tours-container">
-          {homeTours.map((tour, index) => (
+          {visibleTours.map((tour, index) => (
             <div key={index} className="tour-card">
               <div className="tour-image-container">
                 <img src={tour.image} alt={tour.title} />

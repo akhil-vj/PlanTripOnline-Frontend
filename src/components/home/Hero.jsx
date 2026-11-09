@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { globalImages, homePageContent, featuredCountries, brandInfo } from '../../data/global';
+import { useHomepageConfig } from '../../services/homepageService';
 
 export default function Hero() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { heroCountries } = useHomepageConfig();
+
+  // Only display countries toggled active/visible in the Admin Homepage manager
+  const visibleCountries = heroCountries !== undefined ? heroCountries : featuredCountries;
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -49,16 +54,18 @@ export default function Hero() {
         </form>
       </div>
 
-      <div className="hero-destinations">
-        <p>Popular Destinations</p>
-        <div className="hero-destinations-list" id="hero-destinations-list">
-          {featuredCountries.map(country => (
-            <span key={country.slug}>
-              <a href={`/${country.slug}`}>{country.name}</a>
-            </span>
-          ))}
+      {visibleCountries.length > 0 && (
+        <div className="hero-destinations">
+          <p>Popular Destinations</p>
+          <div className="hero-destinations-list" id="hero-destinations-list">
+            {visibleCountries.map(country => (
+              <span key={country.slug}>
+                <a href={`/${country.slug}`}>{country.name}</a>
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

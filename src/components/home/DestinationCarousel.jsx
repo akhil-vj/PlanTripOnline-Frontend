@@ -1,13 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { homeDestinations, homepageConfig } from '../../data/homeData';
+import { useHomepageConfig } from '../../services/homepageService';
 
 export default function DestinationCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { carouselDestinations } = useHomepageConfig();
   
-  // Use config or defaults
-  const limit = homepageConfig?.displayLimits?.destinations || homeDestinations.length;
-  const destinations = homeDestinations.slice(0, limit);
+  // Use live destinations from Admin curation
+  const destinations = carouselDestinations !== undefined ? carouselDestinations : homeDestinations;
+
+  if (!destinations || destinations.length === 0) return null;
   const config = homepageConfig?.carousel?.positions || {
     center: { transform: 'translateX(0) translateZ(50px) scale(1.15)', zIndex: 10, opacity: 1, filter: 'grayscale(0)' },
     right1: { transform: 'translateX(380px) translateZ(-50px) scale(0.95)', zIndex: 5, opacity: 0.85, filter: 'grayscale(20%)' },

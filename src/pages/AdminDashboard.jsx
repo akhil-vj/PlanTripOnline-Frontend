@@ -15,6 +15,7 @@ import DestinationsManager  from '../components/admin/content/DestinationsManage
 import CountriesManager     from '../components/admin/content/CountriesManager';
 import ReviewsManager       from '../components/admin/content/ReviewsManager';
 import AdminProfileSettings from '../components/admin/AdminProfileSettings';
+import HomePageManager      from '../components/admin/content/HomePageManager';
 
 /* ── Error Boundary ─────────────────────────────────────────────────────── */
 class PanelErrorBoundary extends Component {
@@ -46,6 +47,7 @@ const NAV_MAIN = [
   { label:'Enquiries', path:'enquiries', icon:'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
 ];
 const NAV_CONTENT = [
+  { label:'Home Page',     path:'home-page',    icon:'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z' },
   { label:'Day Tours',     path:'day-tours',    icon:'M12 3v2m0 14v2m9-9h-2M5 12H3m14.364 5.364l-1.414-1.414M7.05 7.05L5.636 5.636m12.728 0l-1.414 1.414M7.05 16.95l-1.414 1.414M12 8a4 4 0 100 8 4 4 0 000-8z' },
   { label:'Tour Packages', path:'tour-packages', icon:'M16.5 9.4L7.55 4.24M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16zM3.27 6.96L12 12.01l8.73-5.05M12 22.08V12' },
   { label:'Hotels',        path:'hotels',        icon:'M3 21h18M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16M9 7h1m4 0h1M9 11h1m4 0h1M9 15h1m4 0h1M10 21v-3a1 1 0 011-1h2a1 1 0 011 1v3' },
@@ -68,6 +70,7 @@ const NAV_ALL = [
 /* ── Panel map ──────────────────────────────────────────────────────────── */
 const PANELS = {
   '':              <AdminOverview />,
+  'home-page':     <HomePageManager />,
   'bookings':      <BookingsList />,
   'enquiries':     <EnquiriesList />,
   'users':         <UsersList />,
