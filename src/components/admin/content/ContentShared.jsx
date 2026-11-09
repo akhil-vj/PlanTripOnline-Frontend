@@ -7,11 +7,16 @@
  * - SlidePanel, Field, SaveButton, FormMessage
  */
 import { useState, useEffect, useRef } from 'react';
-import { adminGet } from '../../../config/api';
+import { adminGet, adminUpload } from '../../../config/api';
 
 /* ── Module-level country cache (shared across all manager instances) ─── */
 let _countriesCache = null;
 let _countriesPromise = null;
+
+export function invalidateCountriesCache() {
+  _countriesCache = null;
+  _countriesPromise = null;
+}
 
 function fetchCountriesOnce() {
   if (_countriesCache) return Promise.resolve(_countriesCache);
@@ -363,5 +368,122 @@ export function EmptyState({ icon = '📭', title = 'Nothing here yet', action, 
         )}
       </td>
     </tr>
+  );
+}
+
+/* ── safe — coerce null/undefined → '' for all controlled inputs ──────── */
+export const safeStr = v => (v == null ? '' : String(v));
+
+/** Sanitize an API object — replace all null string fields with '' */
+export function sanitize(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  return Object.fromEntries(
+    Object.entries(obj).map(([k, v]) => [k, v === null ? '' : v])
+  );
+}
+
+/* ── ImageUpload ──────────────────────────────────────────────────────── */
+export function ImageUpload({ value, onChange }) {
+  const safeVal = safeStr(value);
+  const [tab,       setTab]      = useState('url'); // default to URL — file upload needs backend /api/admin/upload
+  const [uploading, setUploading] = useState(false);
+  const [error,     setError]    = useState('');
+  const fileRef = useRef(null);
+
+  async function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setError('');
+    try {
+      const result = await adminUpload(file);
+      onChange(result.url || result.path || '');
+      setError('');
+    } catch (err) {
+      // 404 means backend upload endpoint not configured — tell user clearly
+      const msg = err.message || '';
+      if (msg.includes('404') || msg.includes('Upload failed 404')) {
+        setError('Image upload endpoint not configured on server. Use "Paste URL" mode instead.');
+        setTab('url');
+      } else {
+        setError(msg || 'Upload failed');
+      }
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  }
+
+  const tabBtn = (id, label) => (
+    <button
+      type="button"
+      onClick={() => { setTab(id); setError(''); }}
+      style={{
+        flex: 1, padding: '7px 0', border: 'none', borderRadius: 8,
+        fontWeight: 700, fontSize: '.75rem', cursor: 'pointer', fontFamily: 'inherit',
+        background: tab === id ? '#0f172a' : 'transparent',
+        color:      tab === id ? '#fff'    : '#64748b',
+        transition: 'background .15s, color .15s',
+      }}
+    >{label}</button>
+  );
+
+  return (
+    <div>
+      {/* Tab strip */}
+      <div style={{ display: 'flex', gap: 4, background: '#f1f5f9', borderRadius: 10, padding: 4, marginBottom: 10 }}>
+        {tabBtn('url',  '🔗 Paste URL')}
+        {tabBtn('file', '📁 Upload File')}
+      </div>
+
+      {tab === 'file' ? (
+        <div>
+          <label style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            padding: '12px 14px', border: '1.5px dashed #e2e8f0', borderRadius: 10,
+            cursor: uploading ? 'not-allowed' : 'pointer',
+            background: uploading ? '#f8fafc' : '#fff',
+            color: '#64748b', fontSize: '.83rem', fontWeight: 600,
+          }}>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
+              disabled={uploading} onChange={handleFile} />
+            {uploading
+              ? <><span style={{ animation: 'admPulse 1s ease infinite' }}>⏳</span> Uploading…</>
+              : <>🖼️ Click to choose an image</>}
+          </label>
+        </div>
+      ) : (
+        <input
+          style={inputStyle}
+          value={safeVal}
+          onChange={e => { onChange(e.target.value); setError(''); }}
+          placeholder="https://example.com/image.jpg"
+        />
+      )}
+
+      {/* Error */}
+      {error && (
+        <div style={{ marginTop: 6, fontSize: '.75rem', color: '#dc2626', fontWeight: 600,
+          background: '#fee2e2', borderRadius: 8, padding: '6px 10px' }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      {/* Preview */}
+      {safeVal && (
+        <div style={{ marginTop: 10, position: 'relative' }}>
+          <img src={safeVal} alt="preview"
+            style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 10, display: 'block' }}
+            onError={e => { e.target.style.display = 'none'; }} />
+          <button type="button" onClick={() => onChange('')} title="Remove image"
+            style={{
+              position: 'absolute', top: 6, right: 6,
+              background: 'rgba(15,23,42,.7)', color: '#fff', border: 'none',
+              borderRadius: 6, width: 26, height: 26, cursor: 'pointer',
+              fontSize: '.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>×</button>
+        </div>
+      )}
+    </div>
   );
 }

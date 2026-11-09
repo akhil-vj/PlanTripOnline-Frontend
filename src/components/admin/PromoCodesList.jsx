@@ -228,7 +228,23 @@ export default function PromoCodesList() {
                         {c.type === 'percentage' ? `${c.value}%` : `$${c.value}`}
                       </td>
                       <td style={{ padding:'13px 14px', color:'#475569' }}>{c.min_amount ? `$${c.min_amount}` : '—'}</td>
-                      <td style={{ padding:'13px 14px', color:'#475569', textAlign:'center' }}>{c.uses_count ?? 0}</td>
+                      <td style={{ padding:'13px 14px', color:'#475569', textAlign:'center' }}>
+                        <div>
+                          <span style={{ fontWeight: 700, color: '#0f172a' }}>{c.uses_count ?? 0}</span>
+                          <span style={{ color: '#94a3b8', fontSize: '.75rem' }}> / {c.max_uses ?? '∞'}</span>
+                        </div>
+                        {c.max_uses > 0 && (
+                          <div style={{ marginTop: 5, height: 4, background: '#f1f5f9', borderRadius: 99, overflow: 'hidden', minWidth: 60 }}>
+                            <div style={{
+                              height: '100%',
+                              width: `${Math.min(100, ((c.uses_count ?? 0) / c.max_uses) * 100)}%`,
+                              background: ((c.uses_count ?? 0) / c.max_uses) >= 0.8 ? '#ef4444' : '#f97316',
+                              borderRadius: 99,
+                              transition: 'width .4s ease',
+                            }} />
+                          </div>
+                        )}
+                      </td>
                       <td style={{ padding:'13px 14px', color:'#475569', textAlign:'center' }}>{c.max_uses ?? '∞'}</td>
                       <td style={{ padding:'13px 14px', color:'#475569', whiteSpace:'nowrap' }}>
                         {c.expires_at ? new Date(c.expires_at).toLocaleDateString() : 'Never'}

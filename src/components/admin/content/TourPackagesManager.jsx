@@ -1,17 +1,35 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAdminList } from '../../../hooks/useAdminApi';
 import { adminPost, adminPut, adminDelete } from '../../../config/api';
 import {
   ActiveToggle, SkeletonRow, ErrorBanner, TableActions,
   SlidePanel, Field, inputStyle, SaveButton, FormMessage,
-  CountrySelect, CountryFilterBar, DestinationSelect,
+  CountrySelect, CountryFilterBar, DestinationSelect, ImageUpload, sanitize,
 } from './ContentShared';
+
+/* ── CSV parser ───────────────────────────────────────────────────────────── */
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+  return lines.slice(1).map(line => {
+    const vals = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { vals.push(cur); cur = ''; }
+      else { cur += ch; }
+    }
+    vals.push(cur);
+    return Object.fromEntries(headers.map((h, i) => [h, (vals[i] ?? '').trim()]));
+  });
+}
 
 function PackageForm({ initial = {}, onSave, saving, msg }) {
   const [d, setD] = useState({
     country_id: '', slug: '', title: '', subtitle: '', image: '', badge: '',
     duration: '', price: '', includes: '', description: '', is_active: true, is_featured: false,
-    ...initial,
+    ...sanitize(initial),
     includes: Array.isArray(initial.includes) ? initial.includes.join('\n') : (initial.includes || ''),
   });
   const set = k => e => setD(p => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
@@ -36,9 +54,8 @@ function PackageForm({ initial = {}, onSave, saving, msg }) {
         <Field label="Duration"><input style={inputStyle} value={d.duration} onChange={set('duration')} placeholder="7D/6N" /></Field>
       </div>
       <Field label="Subtitle"><input style={inputStyle} value={d.subtitle} onChange={set('subtitle')} placeholder="Bangkok • Chiang Mai • Phuket" /></Field>
-      <Field label="Image URL">
-        <input style={inputStyle} value={d.image} onChange={set('image')} placeholder="https://..." />
-        {d.image && <img src={d.image} alt="" style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 10, marginTop: 8 }} onError={e => e.target.style.display = 'none'} />}
+      <Field label="Image">
+        <ImageUpload value={d.image} onChange={url => setD(p => ({ ...p, image: url }))} />
       </Field>
       <Field label="Description"><textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }} value={d.description} onChange={set('description')} /></Field>
       <Field label="Includes (one per line)" hint="e.g. 🏨 Hotels">
@@ -60,6 +77,9 @@ export default function TourPackagesManager() {
   const [msg,       setMsg]       = useState('');
   const [search,    setSearch]    = useState('');
   const [countryId, setCountryId] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [importMsg, setImportMsg] = useState('');
+  const fileRef = useRef(null);
 
   const all = Array.isArray(data) ? data : (data?.data ?? []);
   const filtered = all.filter(t => {
@@ -89,6 +109,40 @@ export default function TourPackagesManager() {
     try { await adminDelete(`/api/admin/tour-packages/${id}`); refetch(); } catch (e) { alert(e.message); }
   }
 
+  async function handleImport(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setImporting(true); setImportMsg('');
+    try {
+      const text = await file.text();
+      const rows = parseCSV(text);
+      if (!rows.length) { setImportMsg('⚠️ No data rows found in CSV'); setImporting(false); return; }
+      let ok = 0, fail = 0;
+      for (const row of rows) {
+        try {
+          const payload = {
+            title: row.title || '', slug: row.slug || '',
+            subtitle: row.subtitle || '', badge: row.badge || '',
+            price: parseFloat(row.price) || 0, duration: row.duration || '',
+            description: row.description || '', image: row.image || '',
+            country_id: row.country_id || '', destination_id: row.destination_id || '',
+            is_active: row.is_active !== 'false' && row.is_active !== '0',
+            is_featured: row.is_featured === 'true' || row.is_featured === '1',
+            includes: row.includes ? row.includes.split('|').filter(Boolean) : [],
+          };
+          if (!payload.slug && payload.title) payload.slug = payload.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          await adminPost('/api/admin/tour-packages', payload);
+          ok++;
+        } catch (_) { fail++; }
+      }
+      setImportMsg(`✓ Imported ${ok} package${ok !== 1 ? 's' : ''}${fail ? ` — ${fail} failed` : ''}`);
+      refetch();
+    } catch (err) {
+      setImportMsg(`⚠️ ${err.message || 'Import failed'}`);
+    } finally { setImporting(false); }
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <style>{`@keyframes admPulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
@@ -97,8 +151,27 @@ export default function TourPackagesManager() {
           <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 900, color: '#0f172a' }}>📦 Tour Packages</h2>
           <p style={{ margin: '2px 0 0', fontSize: '.82rem', color: '#64748b' }}>{filtered.length} of {all.length} packages</p>
         </div>
-        <button onClick={() => { setMsg(''); setPanel({ mode: 'create' }); }} style={{ background: 'linear-gradient(135deg,#f97316,#fb923c)', color: '#fff', border: 'none', borderRadius: 12, padding: '10px 20px', fontWeight: 800, fontSize: '.88rem', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 14px rgba(249,115,22,.3)' }}>+ Add Package</button>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <input ref={fileRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleImport} />
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={importing}
+            title="CSV columns: title, slug, subtitle, badge, price, duration, description, image, country_id, destination_id, is_active, is_featured, includes (pipe-separated)"
+            style={{ padding: '10px 18px', background: importing ? '#e2e8f0' : '#fff', color: importing ? '#94a3b8' : '#0f172a', border: '1.5px solid #e2e8f0', borderRadius: 12, fontWeight: 700, fontSize: '.82rem', cursor: importing ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+            {importing ? '⏳ Importing…' : '📥 Import CSV'}
+          </button>
+          <button onClick={() => { setMsg(''); setPanel({ mode: 'create' }); }} style={{ background: 'linear-gradient(135deg,#f97316,#fb923c)', color: '#fff', border: 'none', borderRadius: 12, padding: '10px 20px', fontWeight: 800, fontSize: '.88rem', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 14px rgba(249,115,22,.3)' }}>+ Add Package</button>
+        </div>
       </div>
+      {importMsg && (
+        <div style={{ padding: '10px 16px', borderRadius: 10, fontSize: '.83rem', fontWeight: 600,
+          background: importMsg.startsWith('✓') ? '#dcfce7' : '#fef9c3',
+          color: importMsg.startsWith('✓') ? '#16a34a' : '#a16207',
+          border: `1px solid ${importMsg.startsWith('✓') ? '#bbf7d0' : '#fde68a'}` }}>
+          {importMsg}
+          <button onClick={() => setImportMsg('')} style={{ marginLeft: 12, background: 'none', border: 'none', cursor: 'pointer', fontSize: '.8rem', fontWeight: 700, color: 'inherit' }}>✕</button>
+        </div>
+      )}
       <ErrorBanner error={error} onRetry={refetch} />
       <CountryFilterBar search={search} onSearch={setSearch} countryId={countryId} onCountry={setCountryId} onRefresh={refetch} />
       <div style={{ background: '#fff', borderRadius: 20, boxShadow: '0 2px 12px rgba(0,0,0,.06)', overflow: 'hidden' }}>

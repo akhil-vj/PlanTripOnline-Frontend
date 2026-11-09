@@ -1,6 +1,7 @@
-import { useState, useEffect, Component } from 'react';
+import { useState, useEffect, useRef, Component } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { adminGet } from '../config/api';
 import AdminOverview        from '../components/admin/AdminOverview';
 import BookingsList         from '../components/admin/BookingsList';
 import EnquiriesList        from '../components/admin/EnquiriesList';
@@ -11,6 +12,9 @@ import TourPackagesManager  from '../components/admin/content/TourPackagesManage
 import HotelsManager        from '../components/admin/content/HotelsManager';
 import TransfersManager     from '../components/admin/content/TransfersManager';
 import DestinationsManager  from '../components/admin/content/DestinationsManager';
+import CountriesManager     from '../components/admin/content/CountriesManager';
+import ReviewsManager      from '../components/admin/content/ReviewsManager';
+import AdminProfileSettings from '../components/admin/AdminProfileSettings';
 
 /* ── Error Boundary ─────────────────────────────────────────────────────── */
 class PanelErrorBoundary extends Component {
@@ -48,11 +52,13 @@ const NAV_CONTENT = [
   { label: 'Hotels',        path: 'hotels',        emoji: '🏨' },
   { label: 'Transfers',     path: 'transfers',     emoji: '🚗' },
   { label: 'Destinations',  path: 'destinations',  emoji: '📍' },
+  { label: 'Reviews',       path: 'reviews',       emoji: '⭐' },
 ];
 
 const NAV_SETTINGS = [
   { label: 'Users',       path: 'users',       icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
   { label: 'Promo Codes', path: 'promo-codes', icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z' },
+  { label: 'Countries',   path: 'countries',   icon: '🌍', emoji: '🌍' },
 ];
 
 // Combined for page title lookup
@@ -60,6 +66,7 @@ const NAV_ALL = [
   ...NAV_MAIN,
   ...NAV_CONTENT.map(n => ({ ...n, icon: null })),
   ...NAV_SETTINGS,
+  { label: 'Profile', path: 'profile' },
 ];
 
 /* ── Page → component map ───────────────────────────────────────────────── */
@@ -74,6 +81,9 @@ const PANELS = {
   'hotels':        <HotelsManager />,
   'transfers':     <TransfersManager />,
   'destinations':  <DestinationsManager />,
+  'countries':     <CountriesManager />,
+  'reviews':       <ReviewsManager />,
+  'profile':       <AdminProfileSettings />,
 };
 
 /* ── SVG icon helper ────────────────────────────────────────────────────── */
@@ -107,9 +117,27 @@ export default function AdminDashboard() {
   const location     = useLocation();
   const [collapsed,  setCollapsed]  = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notifCount, setNotifCount] = useState(0);
+  const notifTimerRef = useRef(null);
 
   const userName  = localStorage.getItem('userName')  || 'Admin';
   const userEmail = localStorage.getItem('userEmail') || '';
+
+  /* ── Fetch notification count (pending bookings + enquiries + reviews) ── */
+  useEffect(() => {
+    async function fetchNotifs() {
+      try {
+        const data = await adminGet('/api/admin/notifications/count');
+        const total = (data?.pending_bookings ?? 0)
+          + (data?.pending_enquiries ?? 0)
+          + (data?.pending_reviews ?? 0);
+        setNotifCount(total);
+      } catch (_) { /* silent — bell hidden on error */ }
+    }
+    fetchNotifs();
+    notifTimerRef.current = setInterval(fetchNotifs, 60_000);
+    return () => clearInterval(notifTimerRef.current);
+  }, []);
 
   function handleLogout() {
     ['token', 'userRole', 'userName', 'userEmail'].forEach(k => localStorage.removeItem(k));
@@ -188,14 +216,18 @@ export default function AdminDashboard() {
         .adm-sidebar.collapsed .adm-nav-divider { margin: 6px 10px; }
 
         .adm-user-box { padding: 12px 14px; border-top: 1px solid rgba(255,255,255,.07);
-          display: flex; align-items: center; gap: 10px; overflow: hidden; flex-shrink: 0; }
+          display: flex; align-items: center; gap: 10px; overflow: hidden; flex-shrink: 0;
+          cursor: pointer; text-decoration: none; transition: background .18s; }
+        .adm-user-box:hover { background: rgba(255,255,255,.07); }
         .adm-avatar { width: 34px; height: 34px; border-radius: 50%;
           background: linear-gradient(135deg,#f97316,#fb923c); display: flex; align-items: center;
           justify-content: center; font-weight: 800; color: #fff; font-size: .85rem; flex-shrink: 0; }
-        .adm-user-info { overflow: hidden; min-width: 0; }
+        .adm-user-info { overflow: hidden; min-width: 0; flex: 1; }
         .adm-user-name  { font-size: .8rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .adm-user-email { font-size: .66rem; color: rgba(255,255,255,.32); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .adm-sidebar.collapsed .adm-user-info { display: none; }
+        .adm-user-edit  { flex-shrink: 0; color: rgba(255,255,255,.25); transition: color .18s; }
+        .adm-user-box:hover .adm-user-edit { color: #f97316; }
+        .adm-sidebar.collapsed .adm-user-info, .adm-sidebar.collapsed .adm-user-edit { display: none; }
 
         .adm-topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px;
           height: 60px; display: flex; align-items: center; justify-content: space-between;
@@ -268,14 +300,17 @@ export default function AdminDashboard() {
           </a>
         </nav>
 
-        {/* User box */}
-        <div className="adm-user-box">
+        {/* User box → click to open Profile */}
+        <Link to="/admin-dashboard/profile" className="adm-user-box" title={collapsed ? 'Profile' : 'Edit profile'}>
           <div className="adm-avatar">{userName.charAt(0).toUpperCase()}</div>
           <div className="adm-user-info">
             <div className="adm-user-name">{userName}</div>
             {userEmail && <div className="adm-user-email">{userEmail}</div>}
           </div>
-        </div>
+          <svg className="adm-user-edit" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+        </Link>
 
         {/* Logout */}
         <button className="adm-logout-btn" onClick={handleLogout} title={collapsed ? 'Logout' : undefined}>
@@ -303,6 +338,33 @@ export default function AdminDashboard() {
             <span className="adm-page-title">{pageTitle}</span>
           </div>
           <div className="adm-topbar-right">
+            {/* Notifications bell */}
+            {notifCount > 0 && (
+              <button
+                onClick={() => navigate('/admin-dashboard/bookings')}
+                title={`${notifCount} pending item${notifCount > 1 ? 's' : ''}`}
+                style={{
+                  position: 'relative', background: 'none', border: 'none', cursor: 'pointer',
+                  padding: '6px 10px', borderRadius: 10, display: 'flex', alignItems: 'center',
+                  color: '#64748b', transition: 'background .15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(249,115,22,.08)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}
+              >
+                <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span style={{
+                  position: 'absolute', top: 2, right: 2,
+                  background: '#ef4444', color: '#fff',
+                  borderRadius: 999, fontSize: '.6rem', fontWeight: 900,
+                  minWidth: 16, height: 16, display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', padding: '0 3px', lineHeight: 1,
+                }}>
+                  {notifCount > 99 ? '99+' : notifCount}
+                </span>
+              </button>
+            )}
             <a href="/" target="_blank" rel="noreferrer" className="adm-topbar-btn" style={{ textDecoration: 'none' }}>
               <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

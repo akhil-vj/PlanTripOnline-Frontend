@@ -6,10 +6,10 @@
 import { useState } from 'react';
 import { useAdminList } from '../../../hooks/useAdminApi';
 import { adminPost, adminPut, adminDelete } from '../../../config/api';
-import { useCountries } from './ContentShared';
+import { useCountries, sanitize } from './ContentShared';
 import {
   ActiveToggle, SkeletonRow, ErrorBanner, TableActions,
-  SlidePanel, Field, inputStyle, SaveButton, FormMessage,
+  SlidePanel, Field, inputStyle, SaveButton, FormMessage, ImageUpload,
 } from './ContentShared';
 
 /* ── Sub-destination form ─────────────────────────────────────────────────── */
@@ -17,7 +17,7 @@ function DestForm({ initial = {}, countryId, onSave, saving, msg }) {
   const [d, setD] = useState({
     country_id: countryId, slug: '', name: '', image: '', badge: '',
     description: '', highlights: '', is_active: true,
-    ...initial,
+    ...sanitize(initial),
     highlights: Array.isArray(initial.highlights)
       ? initial.highlights.join('\n')
       : (initial.highlights || ''),
@@ -41,11 +41,8 @@ function DestForm({ initial = {}, countryId, onSave, saving, msg }) {
           <input style={inputStyle} value={d.badge} onChange={set('badge')} placeholder="15 Tours" />
         </Field>
       </div>
-      <Field label="Image URL">
-        <input style={inputStyle} value={d.image} onChange={set('image')} placeholder="https://..." />
-        {d.image && (
-          <img src={d.image} alt="" style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 10, marginTop: 8 }} onError={e => e.target.style.display = 'none'} />
-        )}
+      <Field label="Image">
+        <ImageUpload value={d.image} onChange={url => setD(p => ({ ...p, image: url }))} />
       </Field>
       <Field label="Description">
         <textarea style={{ ...inputStyle, minHeight: 70, resize: 'vertical' }} value={d.description} onChange={set('description')} placeholder="Thailand's vibrant capital…" />

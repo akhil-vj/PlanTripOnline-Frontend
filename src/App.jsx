@@ -45,7 +45,7 @@ export default function App() {
         {[
           '', 'bookings', 'enquiries', 'users', 'promo-codes',
           'day-tours', 'tour-packages', 'hotels', 'transfers', 'destinations',
-          'reviews', 'settings', 'offices',
+          'reviews', 'settings', 'offices', 'countries', 'profile',
         ].map(sub => (
           <Route
             key={`admin-${sub}`}

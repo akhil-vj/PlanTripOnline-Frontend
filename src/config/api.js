@@ -108,6 +108,31 @@ export const adminDelete = async (endpoint) => {
   return res.json().catch(() => ({ success: true }));
 };
 
+/** Upload a file — sends multipart/form-data, returns { url: string } */
+export const adminUpload = async (file) => {
+  const token = localStorage.getItem('token');
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${API_BASE_URL}/api/admin/upload`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+    body: form,
+  });
+  if (res.status === 401) {
+    ['token','userRole','userName','userEmail'].forEach(k => localStorage.removeItem(k));
+    window.location.replace('/login?session=expired');
+    throw new Error('Session expired');
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Upload failed ${res.status}`);
+  }
+  return res.json();
+};
+
 /** Public POST — for bookings, enquiries, promo validation */
 export const publicPost = async (endpoint, body) => {
   const res = await apiFetch(endpoint, {
